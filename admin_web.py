@@ -131,36 +131,54 @@ if st.session_state.auth_status == "unauthenticated":
 # 🌟 GUEST VIEW (MARKETING PORTFOLIO)
 # ==========================================
 elif st.session_state.auth_status == "guest":
-    st.markdown('<div class="guest-header">🚀 MZ Professional Tools</div>', unsafe_allow_html=True)
+    # Header
+    st.markdown('<div class="guest-header" style="font-size:24px; font-weight:bold;">🚀 MZ Professional Tools</div>', unsafe_allow_html=True)
     
+    # Welcome text
     st.markdown("""
-    <div class="guest-text">
+    <div class="guest-text" style="font-size:18px; line-height:1.5;">
         Welcome to MZ Software Solutions! <br><br>
-        We provide all types of <b>Premium POS (Point of Sale) Softwares</b> tailored to your business needs.<br>
-        Like a professional softwaring, all profit management, inventory control, and billing systems are available.<br><br>
+        We provide all types of <b>Premium POS (Point of Sale) Software</b> tailored to your business needs.<br>
+        Like professional software, all profit management, inventory control, and billing systems are available.<br><br>
         <i>Choose what you want, and we will build it for you!</i>
     </div>
     <br>
     """, unsafe_allow_html=True)
     
+    # Columns with buttons      
     g_col1, g_col2, g_col3 = st.columns(3)
     
+    # A session state flag to show contact info after button click
+    if "show_contact" not in st.session_state:
+        st.session_state.show_contact = False
+    
     def show_contact():
+        st.session_state.show_contact = True
+    
+    with g_col1:
+        if st.button("🛒 Buy Retail POS System", use_container_width=True):
+            show_contact()
+    with g_col2:
+        if st.button("💊 Buy Pharmacy POS", use_container_width=True):
+            show_contact()
+    with g_col3:
+        if st.button("🔧 Custom Software Order", use_container_width=True):
+            show_contact()
+    
+    st.write("---")  # separator
+    
+    # Show contact info only if a button was clicked
+    if st.session_state.show_contact:
         st.success("📞 **Contact Us for Support / Purchase: 03476712269 (MZ Professional Tools)**")
         st.info("We are available 24/7 to resolve your issues and provide the best software experience.")
-
-    with g_col1:
-        if st.button("🛒 Buy Retail POS System", use_container_width=True): show_contact()
-    with g_col2:
-        if st.button("💊 Buy Pharmacy POS", use_container_width=True): show_contact()
-    with g_col3:
-        if st.button("🔧 Custom Software Order", use_container_width=True): show_contact()
-        
-    st.write("---")
+    
+    st.write("---")  # separator
+    
+    # Logout button at bottom
     if st.button("⬅️ Logout / Back to Login"):
         st.session_state.auth_status = "unauthenticated"
-        st.rerun()
-
+        st.session_state.show_contact = False   # reset to avoid showing contact after logout
+        st.experimental_rerun()
 # ==========================================
 # 🛡️ ADMIN VIEW (ORIGINAL SYSTEM)
 # ==========================================
