@@ -203,7 +203,12 @@ elif st.session_state.auth_status == "admin":
             res = requests.get(f"{FIREBASE_DB_URL}/security_licenses.json", timeout=10)
             return res.json() if (res.status_code == 200 and res.json()) else {}
         except: return {}
-
+    def get_all_registered_keys():
+        try:
+            res = requests.get(f"{FIREBASE_DB_URL}/registered_keys.json", timeout=10)
+            return res.json() if (res.status_code == 200 and res.json()) else {}
+        except:
+            return {}
     # MZ ADDED: sec_key parameter added without changing original logic
     def save_or_update_license(hwid, name, sec_key, expiry, limit, block_date, status="active", mobile="Not Provided", email="Not Provided", address="Not Provided"):
         try:
@@ -297,6 +302,10 @@ elif st.session_state.auth_status == "admin":
         else:
             st.write("") # Spacer to maintain layout
         
+        # ADDED LINE: Naya key enter ya edit karne ke liye bina purana code hataye input field add kiya gaya hai
+        sec_key_manual_input = st.text_input("Type/Edit Security Key Manually to Save:", value=sec_key_input)
+        sec_key_input = sec_key_manual_input if sec_key_manual_input else sec_key_input
+        
         block_radio = st.radio(
             "System Block State Configuration:",
             ["🟢 Active / Unblocked (No Restriction)", "🚫 Block System Setup"],
@@ -361,19 +370,49 @@ elif st.session_state.auth_status == "admin":
     h6.markdown('<div class="list-header">⚙️ EDIT</div>', unsafe_allow_html=True)
     h7.markdown('<div class="list-header">🗑️ DEL</div>', unsafe_allow_html=True)
 
+    # Dono nodes ka data load karein
+    all_licenses = get_all_licenses()
+    all_registered_keys = get_all_registered_keys()  # Naya data load
+
     found_records = False
     for hwid, data in all_licenses.items():
         name = data.get("name", "")
-        sec_key = data.get("security_key", "-") # GET SECURITY KEY FROM CLOUD
+        sec_key = data.get("security_key", "-")
         
-        # Extract additional personal info registered by the user
         u_mobile = data.get("mobile", "Not Provided")
         u_email = data.get("email", "Not Provided")
         u_address = data.get("address", "Not Provided")
         
-        # Search filter updated to include security key
+        # 🔍 FALLBACK LOGIC: Agar license node mein data nahi hai, to registered_keys se check karo
+        if u_mobile == "Not Provided" or sec_key == "-":
+            for r_key, r_data in all_registered_keys.items():
+                # Client ke Name se match karwa rahe hain
+                if r_data.get("name") == name:
+                    sec_key = r_key  # Real security key mil gayi!
+                    u_mobile = r_data.get("phone", u_mobile)
+                    u_email = r_data.get("email", u_email)
+                    u_address = r_data.get("address", u_address)
+                    break
+
+        # ADDED LINES: Agar exact name match nahi hua ya key khali save hui thhi, toh loose/partial matching check karega
+        if not sec_key or sec_key == "-" or sec_key.strip() == "" or u_mobile == "Not Provided":
+            for r_key, r_data in all_registered_keys.items():
+                r_name_clean = r_data.get("name", "").lower()
+                if name.lower() in r_name_clean or r_name_clean in name.lower():
+                    if not sec_key or sec_key == "-" or sec_key.strip() == "":
+                        sec_key = r_key
+                    if u_mobile == "Not Provided":
+                        u_mobile = r_data.get("phone", u_mobile)
+                    if u_email == "Not Provided":
+                        u_email = r_data.get("email", u_email)
+                    if u_address == "Not Provided":
+                        u_address = r_data.get("address", u_address)
+                    break
+
+        # Baqi aapka niche wala code bilkul same rahega...
         if search_query in hwid.lower() or search_query in name.lower() or search_query in sec_key.lower():
             found_records = True
+            # Grid rendering code...
             c1, c2, c_sec, c3, c4, c5, c_view, c6, c7 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.1, 0.7, 0.6, 0.6])
             c1.write(hwid)
             c2.write(name)
