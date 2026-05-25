@@ -178,7 +178,8 @@ elif st.session_state.auth_status == "guest":
     if st.button("⬅️ Logout / Back to Login"):
         st.session_state.auth_status = "unauthenticated"
         st.session_state.show_contact = False   # reset to avoid showing contact after logout
-        st.experimental_rerun()
+        st.rerun()
+
 # ==========================================
 # 🛡️ ADMIN VIEW (ORIGINAL SYSTEM)
 # ==========================================
@@ -203,14 +204,20 @@ elif st.session_state.auth_status == "admin":
             return res.json() if (res.status_code == 200 and res.json()) else {}
         except: return {}
 
-    def save_or_update_license(hwid, name, expiry, limit, block_date, status="active"):
+    # MZ ADDED: sec_key parameter added without changing original logic
+    def save_or_update_license(hwid, name, sec_key, expiry, limit, block_date, status="active"):
         try:
             res = requests.get(f"{FIREBASE_DB_URL}/security_licenses/{hwid}.json")
             existing = res.json() if res.status_code == 200 and res.json() else {}
             issuance_date = existing.get("issuance_date", datetime.now().strftime("%Y-%m-%d"))
             data = {
-                "name": name, "expiry": str(expiry), "status": status,
-                "blocked_until": str(block_date), "offline_limit_days": int(limit), "issuance_date": issuance_date
+                "name": name, 
+                "security_key": sec_key,  # NEW COLUMN DATA
+                "expiry": str(expiry), 
+                "status": status,
+                "blocked_until": str(block_date), 
+                "offline_limit_days": int(limit), 
+                "issuance_date": issuance_date
             }
             requests.put(f"{FIREBASE_DB_URL}/security_licenses/{hwid}.json", json=data)
             return True
@@ -239,9 +246,10 @@ elif st.session_state.auth_status == "admin":
     # Cache Load
     all_licenses = get_all_licenses()
 
-    # Session States
+    # Session States (MZ ADDED: sel_sec_key)
     if "sel_hwid" not in st.session_state: st.session_state.sel_hwid = ""
     if "sel_name" not in st.session_state: st.session_state.sel_name = ""
+    if "sel_sec_key" not in st.session_state: st.session_state.sel_sec_key = "" # NEW STATE
     if "sel_limit" not in st.session_state: st.session_state.sel_limit = 30
     if "sel_expiry" not in st.session_state: st.session_state.sel_expiry = datetime.now() + timedelta(days=365)
     if "sel_block" not in st.session_state: st.session_state.sel_block = "-"
@@ -255,6 +263,8 @@ elif st.session_state.auth_status == "admin":
     with col1:
         hwid_input = st.text_input("Hardware ID (HWID):", value=st.session_state.sel_hwid)
         customer_name = st.text_input("Customer Name:", value=st.session_state.sel_name)
+        sec_key_input = st.text_input("🔑 Security Key (Shop Code):", value=st.session_state.sel_sec_key) # NEW INPUT
+        
         block_radio = st.radio(
             "System Block State Configuration:",
             ["🟢 Active / Unblocked (No Restriction)", "🚫 Block System Setup"],
@@ -283,15 +293,18 @@ elif st.session_state.auth_status == "admin":
         if st.button("💾 SAVE / COMMIT ALL CHANGES", type="primary", use_container_width=True):
             if hwid_input.strip():
                 with st.spinner("MZ, Synchronizing with Cloud Database..."):
-                    if save_or_update_license(hwid_input.strip(), customer_name, expiry_date, sec_progress, final_block_val, computed_status):
+                    # MZ ADDED: Passed sec_key_input to function
+                    if save_or_update_license(hwid_input.strip(), customer_name, sec_key_input.strip(), expiry_date, sec_progress, final_block_val, computed_status):
                         st.success(f"Great Job MZ! Successfully saved modifications for: {customer_name}")
                         st.session_state.sel_hwid = ""
+                        st.session_state.sel_sec_key = "" # Clear after save
                         st.rerun()
             else: st.error("MZ, Valid HWID String is mandatory.")
     with b_col3:
         if st.button("🧹 RESET FORM FIELDS", use_container_width=True):
             st.session_state.sel_hwid = ""
             st.session_state.sel_name = ""
+            st.session_state.sel_sec_key = "" # Reset security key
             st.session_state.sel_limit = 30
             st.session_state.sel_expiry = datetime.now() + timedelta(days=365)
             st.session_state.sel_block = "-"
@@ -302,11 +315,13 @@ elif st.session_state.auth_status == "admin":
     # --- SECTION 2: MZ CUSTOM DATAGRID ---
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-heading">📊 MZ Live Registered Nodes</div>', unsafe_allow_html=True)
-    search_query = st.text_input("🔍 Filter Registry (HWID / Client Name):", "").lower()
+    search_query = st.text_input("🔍 Filter Registry (HWID / Client Name / Sec Key):", "").lower()
 
-    h1, h2, h3, h4, h5, h6, h7 = st.columns([2.2, 1.8, 2.0, 1.2, 1.4, 0.7, 0.7])
-    h1.markdown('<div class="list-header">💻 HARDWARE ID</div>', unsafe_allow_html=True)
-    h2.markdown('<div class="list-header">👤 CUSTOMER NAME</div>', unsafe_allow_html=True)
+    # MZ ADDED: Column sizing adjusted to fit 8 columns now
+    h1, h2, h_sec, h3, h4, h5, h6, h7 = st.columns([1.8, 1.5, 1.4, 1.5, 1.2, 1.2, 0.7, 0.7])
+    h1.markdown('<div class="list-header">💻 HWID</div>', unsafe_allow_html=True)
+    h2.markdown('<div class="list-header">👤 NAME</div>', unsafe_allow_html=True)
+    h_sec.markdown('<div class="list-header">🔑 SEC KEY</div>', unsafe_allow_html=True) # NEW HEADER
     h3.markdown('<div class="list-header">🛡️ STATUS</div>', unsafe_allow_html=True)
     h4.markdown('<div class="list-header">⏳ EXPIRY</div>', unsafe_allow_html=True)
     h5.markdown('<div class="list-header">🔄 CYCLE</div>', unsafe_allow_html=True)
@@ -316,11 +331,15 @@ elif st.session_state.auth_status == "admin":
     found_records = False
     for hwid, data in all_licenses.items():
         name = data.get("name", "")
-        if search_query in hwid.lower() or search_query in name.lower():
+        sec_key = data.get("security_key", "-") # GET SECURITY KEY FROM CLOUD
+        
+        # Search filter updated to include security key
+        if search_query in hwid.lower() or search_query in name.lower() or search_query in sec_key.lower():
             found_records = True
-            c1, c2, c3, c4, c5, c6, c7 = st.columns([2.2, 1.8, 2.0, 1.2, 1.4, 0.7, 0.7])
+            c1, c2, c_sec, c3, c4, c5, c6, c7 = st.columns([1.8, 1.5, 1.4, 1.5, 1.2, 1.2, 0.7, 0.7])
             c1.write(hwid)
             c2.write(name)
+            c_sec.write(f"`{sec_key}`") # NEW DISPLAY COLUMN
             
             if data.get("status") == "blocked":
                 block_until_str = data.get("blocked_until", "-")
@@ -338,6 +357,7 @@ elif st.session_state.auth_status == "admin":
             if c6.button("✏️", key=f"edit_{hwid}", use_container_width=True):
                 st.session_state.sel_hwid = hwid
                 st.session_state.sel_name = name
+                st.session_state.sel_sec_key = sec_key # LOAD SECURITY KEY FOR EDITING
                 st.session_state.sel_limit = int(data.get("offline_limit_days", 30))
                 st.session_state.sel_block = data.get("blocked_until", "-")
                 st.session_state.sel_status = data.get("status", "active")
