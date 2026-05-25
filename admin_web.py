@@ -205,14 +205,23 @@ elif st.session_state.auth_status == "admin":
         except: return {}
 
     # MZ ADDED: sec_key parameter added without changing original logic
-    def save_or_update_license(hwid, name, sec_key, expiry, limit, block_date, status="active"):
+    def save_or_update_license(hwid, name, sec_key, expiry, limit, block_date, status="active", mobile="Not Provided", email="Not Provided", address="Not Provided"):
         try:
             res = requests.get(f"{FIREBASE_DB_URL}/security_licenses/{hwid}.json")
             existing = res.json() if res.status_code == 200 and res.json() else {}
             issuance_date = existing.get("issuance_date", datetime.now().strftime("%Y-%m-%d"))
+            
+            # Ensuring existing mobile, email, and address aren't overwritten if they exist in the DB
+            final_mobile = existing.get("mobile", mobile)
+            final_email = existing.get("email", email)
+            final_address = existing.get("address", address)
+
             data = {
                 "name": name, 
-                "security_key": sec_key,  # NEW COLUMN DATA
+                "security_key": sec_key,  # NEW COLUMN DATA MAINTAINED
+                "mobile": final_mobile,   # SAVING MOBILE
+                "email": final_email,     # SAVING EMAIL
+                "address": final_address, # SAVING ADDRESS
                 "expiry": str(expiry), 
                 "status": status,
                 "blocked_until": str(block_date), 
@@ -243,6 +252,20 @@ elif st.session_state.auth_status == "admin":
         with col2:
             if st.button("❌ Cancel", use_container_width=True): st.rerun()
 
+    # --- MZ ADDED: USER PROFILE DIALOG (Alternative to Double Click) ---
+    @st.dialog("👤 User Registration Details")
+    def show_user_profile(name, hwid, sec_key, mobile, email, address):
+        st.markdown(f"<h3 style='color: #ffcc00;'>Details for: {name}</h3>", unsafe_allow_html=True)
+        st.write("---")
+        st.info(f"**📱 Mobile Number:** {mobile}")
+        st.success(f"**📧 Email:** {email}")
+        st.warning(f"**🏠 Address:** {address}")
+        st.error(f"**🔑 Security Key:** {sec_key}")
+        st.write(f"**💻 HWID:** {hwid}")
+        st.write("---")
+        if st.button("Close Window", use_container_width=True):
+            st.rerun()
+
     # Cache Load
     all_licenses = get_all_licenses()
 
@@ -263,7 +286,16 @@ elif st.session_state.auth_status == "admin":
     with col1:
         hwid_input = st.text_input("Hardware ID (HWID):", value=st.session_state.sel_hwid)
         customer_name = st.text_input("Customer Name:", value=st.session_state.sel_name)
-        sec_key_input = st.text_input("🔑 Security Key (Shop Code):", value=st.session_state.sel_sec_key) # NEW INPUT
+        
+        # MZ REQUESTED CHANGE: Removed the text input box for Security Key.
+        # Logic remains intact by assigning session state directly to sec_key_input.
+        sec_key_input = st.session_state.sel_sec_key 
+        
+        # Adding a visual indicator instead of an input box to keep line count balanced
+        if sec_key_input:
+            st.markdown(f'<p style="color:#00e676; font-size: 14px;">🔑 Selected Security Key: {sec_key_input}</p>', unsafe_allow_html=True)
+        else:
+            st.write("") # Spacer to maintain layout
         
         block_radio = st.radio(
             "System Block State Configuration:",
@@ -317,29 +349,35 @@ elif st.session_state.auth_status == "admin":
     st.markdown('<div class="section-heading">📊 MZ Live Registered Nodes</div>', unsafe_allow_html=True)
     search_query = st.text_input("🔍 Filter Registry (HWID / Client Name / Sec Key):", "").lower()
 
-    # MZ ADDED: Column sizing adjusted to fit 8 columns now
-    h1, h2, h_sec, h3, h4, h5, h6, h7 = st.columns([1.8, 1.5, 1.4, 1.5, 1.2, 1.2, 0.7, 0.7])
+    # MZ ADDED: Column sizing adjusted to fit 9 columns now (Added INFO/View column)
+    h1, h2, h_sec, h3, h4, h5, h_view, h6, h7 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.1, 0.7, 0.6, 0.6])
     h1.markdown('<div class="list-header">💻 HWID</div>', unsafe_allow_html=True)
     h2.markdown('<div class="list-header">👤 NAME</div>', unsafe_allow_html=True)
     h_sec.markdown('<div class="list-header">🔑 SEC KEY</div>', unsafe_allow_html=True) # NEW HEADER
     h3.markdown('<div class="list-header">🛡️ STATUS</div>', unsafe_allow_html=True)
     h4.markdown('<div class="list-header">⏳ EXPIRY</div>', unsafe_allow_html=True)
     h5.markdown('<div class="list-header">🔄 CYCLE</div>', unsafe_allow_html=True)
+    h_view.markdown('<div class="list-header">👁️ INFO</div>', unsafe_allow_html=True)
     h6.markdown('<div class="list-header">⚙️ EDIT</div>', unsafe_allow_html=True)
-    h7.markdown('<div class="list-header">🗑️ REMOVE</div>', unsafe_allow_html=True)
+    h7.markdown('<div class="list-header">🗑️ DEL</div>', unsafe_allow_html=True)
 
     found_records = False
     for hwid, data in all_licenses.items():
         name = data.get("name", "")
         sec_key = data.get("security_key", "-") # GET SECURITY KEY FROM CLOUD
         
+        # Extract additional personal info registered by the user
+        u_mobile = data.get("mobile", "Not Provided")
+        u_email = data.get("email", "Not Provided")
+        u_address = data.get("address", "Not Provided")
+        
         # Search filter updated to include security key
         if search_query in hwid.lower() or search_query in name.lower() or search_query in sec_key.lower():
             found_records = True
-            c1, c2, c_sec, c3, c4, c5, c6, c7 = st.columns([1.8, 1.5, 1.4, 1.5, 1.2, 1.2, 0.7, 0.7])
+            c1, c2, c_sec, c3, c4, c5, c_view, c6, c7 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.1, 0.7, 0.6, 0.6])
             c1.write(hwid)
             c2.write(name)
-            c_sec.write(f"`{sec_key}`") # NEW DISPLAY COLUMN
+            c_sec.write(f"`{sec_key}`") # DISPLAY COLUMN FOR SECURITY CODE
             
             if data.get("status") == "blocked":
                 block_until_str = data.get("blocked_until", "-")
@@ -352,12 +390,16 @@ elif st.session_state.auth_status == "admin":
             else: c3.success("🟢 ACTIVE")
                 
             c4.write(data.get("expiry", ""))
-            c5.info(f"⏱️ {data.get('offline_limit_days', 30)} Days")
+            c5.info(f"⏱️ {data.get('offline_limit_days', 30)} d")
+            
+            # MZ ADDED: The View button to trigger the user detail pop-up dialog
+            if c_view.button("👁️", key=f"view_{hwid}", use_container_width=True):
+                show_user_profile(name, hwid, sec_key, u_mobile, u_email, u_address)
             
             if c6.button("✏️", key=f"edit_{hwid}", use_container_width=True):
                 st.session_state.sel_hwid = hwid
                 st.session_state.sel_name = name
-                st.session_state.sel_sec_key = sec_key # LOAD SECURITY KEY FOR EDITING
+                st.session_state.sel_sec_key = sec_key # LOAD SECURITY KEY FOR LOGIC ONLY
                 st.session_state.sel_limit = int(data.get("offline_limit_days", 30))
                 st.session_state.sel_block = data.get("blocked_until", "-")
                 st.session_state.sel_status = data.get("status", "active")
