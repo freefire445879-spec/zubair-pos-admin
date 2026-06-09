@@ -21,7 +21,7 @@ st.markdown("""
         font-size: 16px !important;
     }
     
-    /* Login & Guest Box Styling */
+    /* Login Box Styling */
     .login-box {
         background: #1a2235;
         padding: 40px;
@@ -30,22 +30,6 @@ st.markdown("""
         box-shadow: 0px 0px 20px rgba(255, 75, 75, 0.4);
         text-align: center;
         margin-top: 50px;
-    }
-
-    /* Guest Screen Styling */
-    .guest-header {
-        color: #00e676 !important;
-        font-size: 35px;
-        font-weight: 900;
-        text-align: center;
-        text-shadow: 2px 2px 5px rgba(0,230,118,0.5);
-        margin-bottom: 20px;
-    }
-    .guest-text {
-        font-size: 20px;
-        color: #ffffff;
-        text-align: center;
-        line-height: 1.6;
     }
 
     /* Admin Section Cards */
@@ -97,7 +81,7 @@ if "auth_status" not in st.session_state:
     st.session_state.auth_status = "unauthenticated"
 
 # ==========================================
-# 🛑 LOGIN SCREEN
+# 🛑 LOGIN SCREEN (GUEST REMOVED)
 # ==========================================
 if st.session_state.auth_status == "unauthenticated":
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -118,60 +102,11 @@ if st.session_state.auth_status == "unauthenticated":
             else:
                 st.error("❌ Invalid Username or Password!")
                 
-        st.write("---")
-        if st.button("👤 CONTINUE AS GUEST", use_container_width=True):
-            st.session_state.auth_status = "guest"
-            st.toast("👋 Welcome Guest!")
-            st.rerun()
-            
         st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 # ==========================================
-# 🌟 GUEST VIEW (MARKETING PORTFOLIO)
-# ==========================================
-elif st.session_state.auth_status == "guest":
-    st.markdown('<div class="guest-header" style="font-size:24px; font-weight:bold;">🚀 MZ Professional Tools</div>', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="guest-text" style="font-size:18px; line-height:1.5;">
-        Welcome to MZ Software Solutions! <br><br>
-        We provide all types of <b>Premium POS (Point of Sale) Software</b> tailored to your business needs.<br>
-        Like professional software, all profit management, inventory control, and billing systems are available.<br><br>
-        <i>Choose what you want, and we will build it for you!</i>
-    </div>
-    <br>
-    """, unsafe_allow_html=True)
-    
-    g_col1, g_col2, g_col3 = st.columns(3)
-    if "show_contact" not in st.session_state:
-        st.session_state.show_contact = False
-    
-    def show_contact():
-        st.session_state.show_contact = True
-    
-    with g_col1:
-        if st.button("🛒 Buy Retail POS System", use_container_width=True):
-            show_contact()
-    with g_col2:
-        if st.button("💊 Buy Pharmacy POS", use_container_width=True):
-            show_contact()
-    with g_col3:
-        if st.button("🔧 Custom Software Order", use_container_width=True):
-            show_contact()
-    
-    st.write("---")
-    if st.session_state.show_contact:
-        st.success("📞 **Contact Us for Support / Purchase: 03476712269 (MZ Professional Tools)**")
-        st.info("We are available 24/7 to resolve your issues and provide the best software experience.")
-    
-    st.write("---")
-    if st.button("⬅️ Logout / Back to Login"):
-        st.session_state.auth_status = "unauthenticated"
-        st.session_state.show_contact = False
-        st.rerun()
-
-# ==========================================
-# 🛡️ ADMIN VIEW (COMPLETE REVAMPED WORKFLOW)
+# 🛡️ ADMIN VIEW
 # ==========================================
 elif st.session_state.auth_status == "admin":
     colA, colB = st.columns([8, 1])
@@ -265,64 +200,13 @@ elif st.session_state.auth_status == "admin":
     if "sel_expiry" not in st.session_state: st.session_state.sel_expiry = datetime.now().date() + timedelta(days=365)
     if "sel_block" not in st.session_state: st.session_state.sel_block = "-"
     if "sel_status" not in st.session_state: st.session_state.sel_status = "active"
-    # Metadata vectors passed during Accept triggers
     if "sel_mobile" not in st.session_state: st.session_state.sel_mobile = "Not Provided"
     if "sel_email" not in st.session_state: st.session_state.sel_email = "Not Provided"
     if "sel_address" not in st.session_state: st.session_state.sel_address = "Not Provided"
 
-    # ==========================================
-    # PANEL 1: PENDING REQUESTS PANEL ("Requests for POS")
-    # ==========================================
-    st.markdown('<div class="section-card" style="border-left: 6px solid #00e676;">', unsafe_allow_html=True)
-    st.markdown('<div class="section-heading" style="color: #00e676 !important;">📋 Requests for POS (Pending Approval)</div>', unsafe_allow_html=True)
-    
-    pending_requests = get_all_registered_keys()
-    if pending_requests:
-        r_h1, r_h2, r_h3, r_h4, r_h5, r_h6 = st.columns([1.5, 1.2, 1.2, 1.8, 1.0, 1.0])
-        r_h1.markdown('<div class="list-header">👤 CLIENT NAME</div>', unsafe_allow_html=True)
-        r_h2.markdown('<div class="list-header">🔑 SEC KEY</div>', unsafe_allow_html=True)
-        r_h3.markdown('<div class="list-header">📱 PHONE</div>', unsafe_allow_html=True)
-        r_h4.markdown('<div class="list-header">💻 INCOMING HWID</div>', unsafe_allow_html=True)
-        r_h5.markdown('<div class="list-header">✅ ACCEPT</div>', unsafe_allow_html=True)
-        r_h6.markdown('<div class="list-header">❌ REJECT</div>', unsafe_allow_html=True)
-
-        for skey, rdata in pending_requests.items():
-            r_name = rdata.get("name", "Unknown")
-            r_phone = rdata.get("phone", "Not Provided")
-            r_hwid = rdata.get("hardware_id", "No HWID Sent")
-            r_email = rdata.get("email", "Not Provided")
-            r_address = rdata.get("address", "Not Provided")
-
-            rc1, rc2, rc3, rc4, rc5, rc6 = st.columns([1.5, 1.2, 1.2, 1.8, 1.0, 1.0])
-            rc1.write(r_name)
-            rc2.write(f"`{skey}`")
-            rc3.write(r_phone)
-            rc4.write(f"`{r_hwid}`")
-            
-            # ACCEPT BUTTON: Loads data to upper setup section for final approval configuration
-            if rc5.button("Accept 👍", key=f"acc_{skey}", use_container_width=True):
-                st.session_state.sel_hwid = r_hwid
-                st.session_state.sel_name = r_name
-                st.session_state.sel_sec_key = skey
-                st.session_state.sel_mobile = r_phone
-                st.session_state.sel_email = r_email
-                st.session_state.sel_address = r_address
-                st.session_state.sel_issue = datetime.now().date()
-                st.toast(f"📩 Loaded request data for {r_name}. Please set dates and press Save down below!")
-                st.rerun()
-
-            # REJECT BUTTON: Completely removes the request data node from Firebase
-            if rc6.button("Reject 🗑️", key=f"rej_{skey}", use_container_width=True):
-                delete_registration_request(skey)
-                st.toast(f"❌ Deleted request for {r_name}")
-                st.rerun()
-    else:
-        st.info("No current pending registration requests found.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
 
     # ==========================================
-    # PANEL 2: LICENSE SETUP & MODIFICATIONS (MAIN FORM)
+    # PANEL 1: LICENSE SETUP & MODIFICATIONS (MAIN FORM - TOP)
     # ==========================================
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-heading">📝 License Setup & Status Adjustments</div>', unsafe_allow_html=True)
@@ -354,7 +238,6 @@ elif st.session_state.auth_status == "admin":
         st.markdown('<div style="background:#1e293b; padding:15px; border-radius:10px; border:1px solid #ffcc00; margin-top:5px;">', unsafe_allow_html=True)
         st.markdown('<b style="color:#ffcc00;">📅 Manage Validity Timelines (Editable)</b>', unsafe_allow_html=True)
         
-        # BOTH DATES ARE FULLY EDITABLE VIA CALENDAR BOXES HERE
         issuance_date = st.date_input("License Date of Issuance:", value=st.session_state.sel_issue)
         expiry_date = st.date_input("License Validity Expiry Date:", value=st.session_state.sel_expiry)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -365,7 +248,6 @@ elif st.session_state.auth_status == "admin":
         if st.button("💾 SAVE / COMMIT ALL CHANGES", type="primary", use_container_width=True):
             if hwid_input.strip():
                 with st.spinner("MZ, Synchronizing with Cloud Database..."):
-                    # Committing data cleanly into security_licenses node
                     success = save_or_update_license(
                         hwid=hwid_input.strip(), 
                         name=customer_name.strip(), 
@@ -380,12 +262,11 @@ elif st.session_state.auth_status == "admin":
                         address=st.session_state.sel_address
                     )
                     if success:
-                        # Auto delete request from pending lists if it was imported from one
+                        pending_requests = get_all_registered_keys()
                         if sec_key_input.strip() in pending_requests:
                             delete_registration_request(sec_key_input.strip())
                         
                         st.success(f"Great Job MZ! Successfully saved license for: {customer_name}")
-                        # Reset States
                         st.session_state.sel_hwid = ""
                         st.session_state.sel_name = ""
                         st.session_state.sel_sec_key = ""
@@ -417,7 +298,7 @@ elif st.session_state.auth_status == "admin":
 
 
     # ==========================================
-    # PANEL 3: LIVE RECOGNIZED SYSTEMS LIST
+    # PANEL 2: LIVE RECOGNIZED SYSTEMS LIST (MIDDLE)
     # ==========================================
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-heading">📊 MZ Live Registered Nodes</div>', unsafe_allow_html=True)
@@ -492,6 +373,55 @@ elif st.session_state.auth_status == "admin":
             st.markdown("<hr style='margin: 0px; margin-bottom: 10px; border-top: 1px solid #334155;'>", unsafe_allow_html=True)
 
     if not found_records: st.info("MZ, No live activated network machines matched your query.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+    # ==========================================
+    # PANEL 3: PENDING REQUESTS PANEL (SABSY NICHY - BOTTOM)
+    # ==========================================
+    st.markdown('<div class="section-card" style="border-left: 6px solid #00e676;">', unsafe_allow_html=True)
+    st.markdown('<div class="section-heading" style="color: #00e676 !important;">📋 Requests for POS (Pending Approval)</div>', unsafe_allow_html=True)
+    
+    pending_requests = get_all_registered_keys()
+    if pending_requests:
+        r_h1, r_h2, r_h3, r_h4, r_h5, r_h6 = st.columns([1.5, 1.2, 1.2, 1.8, 1.0, 1.0])
+        r_h1.markdown('<div class="list-header">👤 CLIENT NAME</div>', unsafe_allow_html=True)
+        r_h2.markdown('<div class="list-header">🔑 SEC KEY</div>', unsafe_allow_html=True)
+        r_h3.markdown('<div class="list-header">📱 PHONE</div>', unsafe_allow_html=True)
+        r_h4.markdown('<div class="list-header">💻 INCOMING HWID</div>', unsafe_allow_html=True)
+        r_h5.markdown('<div class="list-header">✅ ACCEPT</div>', unsafe_allow_html=True)
+        r_h6.markdown('<div class="list-header">❌ REJECT</div>', unsafe_allow_html=True)
+
+        for skey, rdata in pending_requests.items():
+            r_name = rdata.get("name", "Unknown")
+            r_phone = rdata.get("phone", "Not Provided")
+            r_hwid = rdata.get("hardware_id", "No HWID Sent")
+            r_email = rdata.get("email", "Not Provided")
+            r_address = rdata.get("address", "Not Provided")
+
+            rc1, rc2, rc3, rc4, rc5, rc6 = st.columns([1.5, 1.2, 1.2, 1.8, 1.0, 1.0])
+            rc1.write(r_name)
+            rc2.write(f"`{skey}`")
+            rc3.write(r_phone)
+            rc4.write(f"`{r_hwid}`")
+            
+            if rc5.button("Accept 👍", key=f"acc_{skey}", use_container_width=True):
+                st.session_state.sel_hwid = r_hwid
+                st.session_state.sel_name = r_name
+                st.session_state.sel_sec_key = skey
+                st.session_state.sel_mobile = r_phone
+                st.session_state.sel_email = r_email
+                st.session_state.sel_address = r_address
+                st.session_state.sel_issue = datetime.now().date()
+                st.toast(f"📩 Loaded request data for {r_name}. Please set dates and press Save down below!")
+                st.rerun()
+
+            if rc6.button("Reject 🗑️", key=f"rej_{skey}", use_container_width=True):
+                delete_registration_request(skey)
+                st.toast(f"❌ Deleted request for {r_name}")
+                st.rerun()
+    else:
+        st.info("No current pending registration requests found.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- DEVELOPER FOOTER ---
