@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 # --- PAGE CONFIGURATION ---
 st.set_page_config(page_title="MZ Central Hub", page_icon="🛡️", layout="wide")
 
-FIREBASE_DB_URL = "https://zubairpos-cloud-default-rtdb.firebaseio.com/"
+FIREBASE_DB_URL = "https://zubairposbackup-default-rtdb.firebaseio.com/"
 
 # --- ULTRA-PREMIUM HIGH CONTRAST CSS ---
 st.markdown("""
