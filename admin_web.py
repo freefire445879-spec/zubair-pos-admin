@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 # --- PAGE CONFIGURATION ---
 st.set_page_config(page_title="MZ Central Hub - Terminal", page_icon="🛡️", layout="wide")
 
-# FRESH FIREBASE PROJECT URL (Make sure API key or rule is open as per your setup)
+# FRESH FIREBASE PROJECT URL
 FIREBASE_DB_URL = "https://zubairposbackup-default-rtdb.firebaseio.com/"
 
 # --- ULTRA-PREMIUM ENTERPRISE CSS ---
@@ -22,12 +22,6 @@ st.markdown("""
     }
     
     /* Login Screen - Glassmorphism Magic */
-    .login-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 60vh;
-    }
     .login-box {
         background: rgba(15, 23, 42, 0.6);
         backdrop-filter: blur(20px);
@@ -37,9 +31,6 @@ st.markdown("""
         border: 1px solid rgba(56, 189, 248, 0.3);
         box-shadow: 0 0 40px rgba(14, 165, 233, 0.2), inset 0 0 20px rgba(255,255,255,0.05);
         text-align: center;
-        width: 100%;
-        max-width: 500px;
-        margin: auto;
         margin-top: 50px;
     }
 
@@ -135,7 +126,7 @@ def remove_pending_request(sec_key):
 
 # --- STATE ENGINE MANAGEMENT ---
 if "auth_status" not in st.session_state: st.session_state.auth_status = "unauthenticated"
-if "nav_page" not in st.session_state: st.session_state.nav_page = "home" # Tabs state
+if "nav_page" not in st.session_state: st.session_state.nav_page = "home" 
 if "sel_hwid" not in st.session_state: st.session_state.sel_hwid = ""
 if "sel_name" not in st.session_state: st.session_state.sel_name = ""
 if "sel_sec_key" not in st.session_state: st.session_state.sel_sec_key = ""
@@ -152,23 +143,26 @@ if "sel_address" not in st.session_state: st.session_state.sel_address = ""
 # 🛑 PROFESSIONAL SECURITY ACCESS GATEWAY (LOGIN)
 # ==========================================
 if st.session_state.auth_status == "unauthenticated":
-    st.markdown('<div class="login-container">', unsafe_allow_html=True)
-    st.markdown('<div class="login-box">', unsafe_allow_html=True)
-    st.markdown('<div class="brand-title">🛡️ MZ SECURITY HUB</div>', unsafe_allow_html=True)
-    st.markdown('<div class="brand-sub">ENTERPRISE LICENSE MANAGEMENT</div>', unsafe_allow_html=True)
+    # Using columns to center the login box properly like a real web app
+    _, col_login, _ = st.columns([1, 1.5, 1])
     
-    adm_user = st.text_input("ADMIN USERNAME", placeholder="Enter your identity...")
-    adm_pass = st.text_input("SECURITY PIN", type="password", placeholder="Enter master key...")
-    
-    st.write("")
-    if st.button("🔐 AUTHENTICATE & ENTER", type="primary", use_container_width=True):
-        if adm_user == "MZAdmin" and adm_pass == "Zubair@786":
-            st.session_state.auth_status = "admin"
-            st.rerun()
-        else:
-            st.error("❌ Access Forbidden: Invalid Credentials")
-            
-    st.markdown('</div></div>', unsafe_allow_html=True)
+    with col_login:
+        st.markdown('<div class="login-box">', unsafe_allow_html=True)
+        st.markdown('<div class="brand-title">🛡️ MZ SECURITY HUB</div>', unsafe_allow_html=True)
+        st.markdown('<div class="brand-sub">ENTERPRISE LICENSE MANAGEMENT</div>', unsafe_allow_html=True)
+        
+        adm_user = st.text_input("ADMIN USERNAME", placeholder="Enter your identity...")
+        adm_pass = st.text_input("SECURITY PIN", type="password", placeholder="Enter master key...")
+        
+        st.write("")
+        if st.button("🔐 AUTHENTICATE & ENTER", type="primary", use_container_width=True):
+            if adm_user == "MZAdmin" and adm_pass == "Zubair@786":
+                st.session_state.auth_status = "admin"
+                st.rerun()
+            else:
+                st.error("❌ Access Forbidden: Invalid Credentials")
+                
+        st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 # ==========================================
@@ -184,7 +178,6 @@ elif st.session_state.auth_status == "admin":
             st.session_state.auth_status = "unauthenticated"
             st.rerun()
 
-    # PENDING REQUESTS COUNTER (For visual badge)
     unapproved_queue = get_all_registered_keys()
     req_count = len(unapproved_queue)
     req_btn_text = f"📩 PENDING REQUESTS ({req_count})" if req_count > 0 else "📩 PENDING REQUESTS"
@@ -205,7 +198,6 @@ elif st.session_state.auth_status == "admin":
     # VIEW 1: HOME (REGISTRATION & ACTIVE LIST)
     # ==========================================
     if st.session_state.nav_page == "home":
-        # PANEL: MASTER CONTROLLER FIELD ENTRY
         st.markdown('<div class="section-card">', unsafe_allow_html=True)
         st.markdown('<h4 style="color:#f8fafc; margin-bottom: 20px;">⚙️ Profile Activation & Variables</h4>', unsafe_allow_html=True)
 
@@ -279,7 +271,9 @@ elif st.session_state.auth_status == "admin":
         # PANEL: ACTIVE LIVE SYSTEMS
         st.markdown('<div class="section-card">', unsafe_allow_html=True)
         st.markdown('<h4 style="color:#f8fafc; margin-bottom: 20px;">📊 Authorized Production Nodes</h4>', unsafe_allow_html=True)
-        filter_string = st.text_input("🔍 Search Database (Name, Key, HWID):", "").lower()
+        
+        # HOME SEARCH BAR
+        filter_string = st.text_input("🔍 Search Database (Name, Key, HWID, Phone, Address):", "").lower()
 
         dc1, dc2, dc3, dc4, dc5, dc6, dc7, dc8 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.2, 0.6, 0.6])
         dc1.markdown('<div class="list-header">HWID</div>', unsafe_allow_html=True)
@@ -297,11 +291,19 @@ elif st.session_state.auth_status == "admin":
         for hwid_node, node_data in production_licenses.items():
             n_name = node_data.get("name", "")
             n_skey = node_data.get("security_key", "-")
+            n_phone = node_data.get("mobile", "")
+            n_address = node_data.get("address", "")
             
-            if filter_string in hwid_node.lower() or filter_string in n_name.lower() or filter_string in n_skey.lower():
+            # ADVANCED FILTERING LOGIC
+            if (filter_string in hwid_node.lower() or 
+                filter_string in n_name.lower() or 
+                filter_string in n_skey.lower() or
+                filter_string in n_phone.lower() or
+                filter_string in n_address.lower()):
+                
                 matched_any = True
                 r1, r2, r3, r4, r5, r6, r7, r8 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.2, 0.6, 0.6])
-                r1.write(f"`{hwid_node[:15]}...`") # Shrink slightly for UI neatness
+                r1.write(f"`{hwid_node[:15]}...`")
                 r2.write(n_name)
                 r3.write(f"`{n_skey}`")
                 
@@ -309,15 +311,15 @@ elif st.session_state.auth_status == "admin":
                 else: r4.markdown('<span class="badge-active">🟢 ACTIVE</span>', unsafe_allow_html=True)
                     
                 r5.write(node_data.get("expiry", "-"))
-                r6.write(node_data.get("mobile", "-"))
+                r6.write(n_phone if n_phone else "-")
                 
                 if r7.button("✏️", key=f"edit_{hwid_node}"):
                     st.session_state.sel_hwid = hwid_node
                     st.session_state.sel_name = n_name
                     st.session_state.sel_sec_key = n_skey
-                    st.session_state.sel_mobile = node_data.get("mobile", "")
+                    st.session_state.sel_mobile = n_phone
                     st.session_state.sel_email = node_data.get("email", "")
-                    st.session_state.sel_address = node_data.get("address", "")
+                    st.session_state.sel_address = n_address
                     st.session_state.sel_limit = int(node_data.get("offline_limit_days", 30))
                     st.session_state.sel_block = node_data.get("blocked_until", "-")
                     st.session_state.sel_status = node_data.get("status", "active")
@@ -335,7 +337,6 @@ elif st.session_state.auth_status == "admin":
         if not matched_any: st.info("No active licenses found.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-
     # ==========================================
     # VIEW 2: PENDING REQUESTS MENU
     # ==========================================
@@ -344,7 +345,10 @@ elif st.session_state.auth_status == "admin":
         st.markdown('<h4 style="color:#f59e0b; margin-bottom: 20px;">📋 Inbound Device Pipeline</h4>', unsafe_allow_html=True)
         
         if unapproved_queue:
-            # Added Address Column and resized HWID
+            # REQUESTS SEARCH BAR ADDED HERE
+            req_search = st.text_input("🔍 Search Requests (ID, Name, Phone, Address):", "").lower()
+            st.write("")
+
             qh1, qh2, qh3, qh4, qh5, qh6, qh7 = st.columns([1.5, 1.2, 1.2, 1.5, 1.2, 1.0, 1.0])
             qh1.markdown('<div class="list-header">CLIENT NAME</div>', unsafe_allow_html=True)
             qh2.markdown('<div class="list-header">KEY</div>', unsafe_allow_html=True)
@@ -354,42 +358,53 @@ elif st.session_state.auth_status == "admin":
             qh6.markdown('<div class="list-header">ACTION</div>', unsafe_allow_html=True)
             qh7.markdown('<div class="list-header">REJECT</div>', unsafe_allow_html=True)
 
+            req_matched = False
             for req_key, req_val in unapproved_queue.items():
                 q_name = req_val.get("name", "Unknown")
                 q_phone = req_val.get("phone", "")
-                q_address = req_val.get("address", "N/A") # Yeh raha address!
+                q_address = req_val.get("address", "N/A") 
                 q_hwid = req_val.get("hardware_id", "UNKNOWN")
                 q_email = req_val.get("email", "")
                 q_issue = req_val.get("issue_date", str(datetime.now().date()))
                 q_expiry = req_val.get("expiry_date", str(datetime.now().date() + timedelta(days=365)))
 
-                qc1, qc2, qc3, qc4, qc5, qc6, qc7 = st.columns([1.5, 1.2, 1.2, 1.5, 1.2, 1.0, 1.0])
-                qc1.write(q_name)
-                qc2.write(f"`{req_key}`")
-                qc3.write(q_phone)
-                qc4.write(f"*{q_address[:20]}*") # Address dikhayega yahan
-                qc5.write(f"`{q_hwid[:8]}...`")
-                
-                # JADU YAHAN HAI: Accept dabaane par saara data save kar ke Page Home par redirect!
-                if qc6.button("Load 👍", key=f"load_{req_key}", use_container_width=True):
-                    st.session_state.sel_hwid = q_hwid
-                    st.session_state.sel_name = q_name
-                    st.session_state.sel_sec_key = req_key
-                    st.session_state.sel_mobile = q_phone
-                    st.session_state.sel_email = q_email
-                    st.session_state.sel_address = q_address
-                    try: st.session_state.sel_issue = datetime.strptime(q_issue, "%Y-%m-%d").date()
-                    except: st.session_state.sel_issue = datetime.now().date()
-                    try: st.session_state.sel_expiry = datetime.strptime(q_expiry, "%Y-%m-%d").date()
-                    except: st.session_state.sel_expiry = datetime.now().date()
+                # REQUESTS FILTERING LOGIC
+                if (req_search in q_name.lower() or 
+                    req_search in req_key.lower() or 
+                    req_search in q_phone.lower() or 
+                    req_search in q_address.lower() or 
+                    req_search in q_hwid.lower()):
                     
-                    st.session_state.nav_page = "home" # Auto-Switch to Home
-                    st.rerun()
+                    req_matched = True
+                    qc1, qc2, qc3, qc4, qc5, qc6, qc7 = st.columns([1.5, 1.2, 1.2, 1.5, 1.2, 1.0, 1.0])
+                    qc1.write(q_name)
+                    qc2.write(f"`{req_key}`")
+                    qc3.write(q_phone)
+                    qc4.write(f"*{q_address[:20]}*") 
+                    qc5.write(f"`{q_hwid[:8]}...`")
+                    
+                    if qc6.button("Load 👍", key=f"load_{req_key}", use_container_width=True):
+                        st.session_state.sel_hwid = q_hwid
+                        st.session_state.sel_name = q_name
+                        st.session_state.sel_sec_key = req_key
+                        st.session_state.sel_mobile = q_phone
+                        st.session_state.sel_email = q_email
+                        st.session_state.sel_address = q_address
+                        try: st.session_state.sel_issue = datetime.strptime(q_issue, "%Y-%m-%d").date()
+                        except: st.session_state.sel_issue = datetime.now().date()
+                        try: st.session_state.sel_expiry = datetime.strptime(q_expiry, "%Y-%m-%d").date()
+                        except: st.session_state.sel_expiry = datetime.now().date()
+                        
+                        st.session_state.nav_page = "home"
+                        st.rerun()
 
-                if qc7.button("Drop ❌", key=f"drop_{req_key}", use_container_width=True):
-                    remove_pending_request(req_key)
-                    st.rerun()
-                st.markdown("<hr style='margin: 6px 0; border-top: 1px solid #1e293b;'>", unsafe_allow_html=True)
+                    if qc7.button("Drop ❌", key=f"drop_{req_key}", use_container_width=True):
+                        remove_pending_request(req_key)
+                        st.rerun()
+                    st.markdown("<hr style='margin: 6px 0; border-top: 1px solid #1e293b;'>", unsafe_allow_html=True)
+            
+            if not req_matched:
+                st.info("No matching requests found based on your search.")
         else:
             st.info("Pipeline Status: Clear. No pending requests.")
         st.markdown('</div>', unsafe_allow_html=True)
