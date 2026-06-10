@@ -260,6 +260,36 @@ def push_license_secure(hwid, name, sec_key, issuance, expiry, limit, block_date
         requests.put(f"{FIREBASE_DB_URL}/security_licenses/{hwid}.json", json=payload)
         return True
     except: return False
+def migrate_full_backup(old_key, new_key):
+    """
+    Agar admin panel se security key change ho to yeh function purane backup node 
+    ko naye key node par shift (rename) kar dega aur andar ki internal key bhi update karega.
+    """
+    if not old_key or not new_key or old_key == new_key:
+        return True
+    try:
+        clean_old = old_key.strip().replace(".", "").replace("#", "").replace("$", "").replace("[", "").replace("]", "")
+        clean_new = new_key.strip().replace(".", "").replace("#", "").replace("$", "").replace("[", "").replace("]", "")
+        
+        # 1. Purana backup data fetch karein
+        res = requests.get(f"{FIREBASE_DB_URL}/full_backups/{clean_old}.json", timeout=15)
+        if res.status_code == 200 and res.json() is not None:
+            backup_data = res.json()
+            
+            # 2. Backup file ke andar mojood internal key ko bhi naye key se replace karein
+            if isinstance(backup_data, dict) and "security_key" in backup_data:
+                backup_data["security_key"] = new_key
+                
+            # 3. Naye key node par data write karein
+            put_res = requests.put(f"{FIREBASE_DB_URL}/full_backups/{clean_new}.json", json=backup_data, timeout=15)
+            
+            if put_res.status_code == 200:
+                # 4. Kamyabi se write hone ke baad purana node delete kar dein
+                requests.delete(f"{FIREBASE_DB_URL}/full_backups/{clean_old}.json", timeout=15)
+                return True
+    except Exception as e:
+        print(f"Backup Migration Error: {e}")
+    return False
 
 def remove_license_node(hwid):
     try:
@@ -383,27 +413,44 @@ elif st.session_state.auth_status == "admin":
         st.write(" ")
         action_box1, action_box2 = st.columns(2)
         with action_box1:
-            if st.button("💾 COMMIT VECTOR TO LIVE ENGINES", type="primary", use_container_width=True):
-                if in_hwid.strip() and in_skey.strip():
-                    with st.spinner("Synchronizing parameters safely with secure nodes..."):
-                        committed = push_license_secure(
-                            in_hwid.strip(), in_name.strip(), in_skey.strip(), in_issue, in_expiry, 
-                            in_days_limit, assigned_block_val, assigned_status_val,
-                            edit_mobile.strip(), edit_email.strip(), edit_address.strip()
-                        )
-                        if committed:
-                            if in_skey.strip() in unapproved_queue: remove_pending_request(in_skey.strip())
-                            st.success(f"Execution Parameters Comitted for Node: {in_name}")
-                            st.session_state.sel_hwid = ""
-                            st.session_state.sel_name = ""
-                            st.session_state.sel_sec_key = ""
-                            st.session_state.sel_mobile = ""
-                            st.session_state.sel_email = ""
-                            st.session_state.sel_address = ""
-                            st.session_state.sel_issue = datetime.now().date()
-                            st.session_state.sel_expiry = datetime.now().date() + timedelta(days=365)
-                            st.rerun()
-                else: st.error("Validation Halt: HWID & Security Passkey variables are strictly required!")
+                if st.button("💾 COMMIT VECTOR TO LIVE ENGINES", type="primary", use_container_width=True):
+                    if in_hwid.strip() and in_skey.strip():
+                        with st.spinner("Synchronizing parameters safely with secure nodes..."):
+                            
+                            # --- NAYI LOGIC: Purani key check karne aur backup migrate karne ke liye ---
+                            old_sec_key = ""
+                            try:
+                                # Pehle live database se is HWID ki purani key check karein
+                                current_licenses = get_all_licenses()
+                                if in_hwid.strip() in current_licenses:
+                                    old_sec_key = current_licenses[in_hwid.strip()].get("security_key", "")
+                            except:
+                                pass
+                            
+                            # Agar purani key mil gayi hai aur woh naye enter kiye gaye key se mukhtalif (change) hai
+                            if old_sec_key and old_sec_key != in_skey.strip():
+                                migrate_full_backup(old_sec_key, in_skey.strip())
+                            # -------------------------------------------------------------------------
+
+                            # Baqi aap ka purana code as it is chalega
+                            committed = push_license_secure(
+                                in_hwid.strip(), in_name.strip(), in_skey.strip(), in_issue, in_expiry, 
+                                in_days_limit, assigned_block_val, assigned_status_val,
+                                edit_mobile.strip(), edit_email.strip(), edit_address.strip()
+                            )
+                            if committed:
+                                if in_skey.strip() in unapproved_queue: remove_pending_request(in_skey.strip())
+                                st.success(f"Execution Parameters Comitted for Node: {in_name}")
+                                st.session_state.sel_hwid = ""
+                                st.session_state.sel_name = ""
+                                st.session_state.sel_sec_key = ""
+                                st.session_state.sel_mobile = ""
+                                st.session_state.sel_email = ""
+                                st.session_state.sel_address = ""
+                                st.session_state.sel_issue = datetime.now().date()
+                                st.session_state.sel_expiry = datetime.now().date() + timedelta(days=365)
+                                st.rerun()
+                    else: st.error("Validation Halt: HWID & Security Passkey variables are strictly required!")
                 
         with action_box2:
             if st.button("🧹 PURGE BUFFER / CLEAR FORM", use_container_width=True):
