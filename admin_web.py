@@ -257,7 +257,8 @@ def push_license_secure(hwid, name, sec_key, issuance, expiry, limit, block_date
             "issuance_date": str(issuance), "expiry": str(expiry), "status": status,
             "blocked_until": str(block_date), "offline_limit_days": int(limit)
         }
-        requests.put(f"{FIREBASE_DB_URL}/security_licenses/{hwid}.json", json=payload)
+        # 🔥 PUT ki jagah PATCH lagaya taake 'backup_data' node mity nahi!
+        requests.patch(f"{FIREBASE_DB_URL}/security_licenses/{hwid}.json", json=payload)
         return True
     except: return False
 def migrate_full_backup(old_key, new_key):
@@ -417,22 +418,7 @@ elif st.session_state.auth_status == "admin":
                     if in_hwid.strip() and in_skey.strip():
                         with st.spinner("Synchronizing parameters safely with secure nodes..."):
                             
-                            # --- NAYI LOGIC: Purani key check karne aur backup migrate karne ke liye ---
-                            old_sec_key = ""
-                            try:
-                                # Pehle live database se is HWID ki purani key check karein
-                                current_licenses = get_all_licenses()
-                                if in_hwid.strip() in current_licenses:
-                                    old_sec_key = current_licenses[in_hwid.strip()].get("security_key", "")
-                            except:
-                                pass
-                            
-                            # Agar purani key mil gayi hai aur woh naye enter kiye gaye key se mukhtalif (change) hai
-                            if old_sec_key and old_sec_key != in_skey.strip():
-                                migrate_full_backup(old_sec_key, in_skey.strip())
-                            # -------------------------------------------------------------------------
-
-                            # Baqi aap ka purana code as it is chalega
+                            # Baqi fields ko secure patch ke zariye update karein (backup_data safe rahega)
                             committed = push_license_secure(
                                 in_hwid.strip(), in_name.strip(), in_skey.strip(), in_issue, in_expiry, 
                                 in_days_limit, assigned_block_val, assigned_status_val,
