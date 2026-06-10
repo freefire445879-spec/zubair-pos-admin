@@ -6,448 +6,392 @@ from datetime import datetime, timedelta
 # --- PAGE CONFIGURATION ---
 st.set_page_config(page_title="MZ Central Hub - Terminal", page_icon="🛡️", layout="wide")
 
-# FRESH FIREBASE PROJECT URL
+# FRESH FIREBASE PROJECT URL (Make sure API key or rule is open as per your setup)
 FIREBASE_DB_URL = "https://zubairposbackup-default-rtdb.firebaseio.com/"
 
-# --- ULTRA-PROFESSIONAL PREMIUM DARK CSS ---
+# --- ULTRA-PREMIUM ENTERPRISE CSS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
     
+    /* Master Background */
     .stApp { 
-        background: radial-gradient(circle at top right, #0a0f1d, #030712); 
-        color: #f1f5f9;
+        background: radial-gradient(circle at center, #1e293b, #020617); 
+        color: #f8fafc;
         font-family: 'Inter', sans-serif;
     }
     
-    /* Form Labels High Contrast */
-    label, div[data-testid="stMarkdownContainer"] p {
-        color: #94a3b8 !important;
-        font-weight: 600 !important;
-        text-transform: uppercase;
-        font-size: 12px !important;
-        letter-spacing: 0.7px;
+    /* Login Screen - Glassmorphism Magic */
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 60vh;
     }
-    
-    /* Login Screen Container */
     .login-box {
-        background: rgba(17, 24, 39, 0.7);
-        backdrop-filter: blur(15px);
-        padding: 45px;
-        border-radius: 20px;
-        border: 1px solid rgba(245, 158, 11, 0.2);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding: 50px;
+        border-radius: 24px;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        box-shadow: 0 0 40px rgba(14, 165, 233, 0.2), inset 0 0 20px rgba(255,255,255,0.05);
         text-align: center;
-        margin-top: 60px;
+        width: 100%;
+        max-width: 500px;
+        margin: auto;
+        margin-top: 50px;
     }
 
-    /* Professional Content Cards */
-    .section-card {
-        background: #111827;
-        padding: 30px;
-        border-radius: 16px;
-        border: 1px solid #1f2937;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        margin-bottom: 35px;
+    /* Input Fields Styling */
+    .stTextInput input {
+        background-color: #0f172a !important;
+        color: #38bdf8 !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        font-weight: 600;
+    }
+    .stTextInput input:focus {
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.4) !important;
     }
     
-    .section-heading {
-        color: #f9fafb !important;
-        font-size: 20px;
-        font-weight: 800;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #374151;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    /* Labels */
+    label, div[data-testid="stMarkdownContainer"] p {
+        color: #cbd5e1 !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        letter-spacing: 0.5px;
+    }
+
+    /* Content Cards */
+    .section-card {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(10px);
+        padding: 25px;
+        border-radius: 16px;
+        border: 1px solid #334155;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        margin-bottom: 25px;
     }
 
     .list-header {
-        font-weight: 700;
+        font-weight: 800;
         color: #38bdf8;
-        border-bottom: 2px solid #1f2937;
-        padding-bottom: 6px;
+        border-bottom: 2px solid #334155;
+        padding-bottom: 8px;
         margin-bottom: 15px;
         font-size: 12px;
         text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
     /* Badges */
-    .badge-active {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981 !important;
-        padding: 3px 12px;
-        border-radius: 6px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        font-weight: bold;
-    }
-    .badge-blocked {
-        background: rgba(239, 68, 68, 0.1);
-        color: #ef4444 !important;
-        padding: 3px 12px;
-        border-radius: 6px;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        font-weight: bold;
-    }
+    .badge-active { background: rgba(16, 185, 129, 0.15); color: #34d399 !important; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: bold; font-size: 12px;}
+    .badge-blocked { background: rgba(239, 68, 68, 0.15); color: #f87171 !important; padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: bold; font-size: 12px;}
 
-    /* Core Branding Footer */
-    .dev-footer {
-        text-align: center;
-        color: #4b5563;
-        font-size: 13px;
-        font-weight: 600;
-        margin-top: 80px;
-        padding: 20px 0;
-        border-top: 1px solid #1f2937;
-    }
-    .dev-footer span {
-        color: #f59e0b;
-        font-weight: 800;
-    }
+    /* Top Brand */
+    .brand-title { color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 0 20px rgba(56,189,248,0.5); margin-bottom: 5px; }
+    .brand-sub { color: #94a3b8; font-size: 14px; margin-bottom: 30px; letter-spacing: 2px; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- AUTHENTICATION ENGINE ---
-if "auth_status" not in st.session_state:
-    st.session_state.auth_status = "unauthenticated"
+# --- FIREBASE FUNCTIONS ---
+def get_all_licenses():
+    try:
+        res = requests.get(f"{FIREBASE_DB_URL}/security_licenses.json", timeout=10)
+        return res.json() if (res.status_code == 200 and res.json()) else {}
+    except: return {}
+
+def get_all_registered_keys():
+    try:
+        res = requests.get(f"{FIREBASE_DB_URL}/registered_keys.json", timeout=10)
+        return res.json() if (res.status_code == 200 and res.json()) else {}
+    except: return {}
+
+def push_license_secure(hwid, name, sec_key, issuance, expiry, limit, block_date, status, mobile, email, address):
+    try:
+        payload = {
+            "name": name, "security_key": sec_key, "mobile": mobile, "email": email, "address": address, 
+            "issuance_date": str(issuance), "expiry": str(expiry), "status": status,
+            "blocked_until": str(block_date), "offline_limit_days": int(limit)
+        }
+        requests.put(f"{FIREBASE_DB_URL}/security_licenses/{hwid}.json", json=payload)
+        return True
+    except: return False
+
+def remove_license_node(hwid):
+    try:
+        requests.delete(f"{FIREBASE_DB_URL}/security_licenses/{hwid}.json")
+        return True
+    except: return False
+
+def remove_pending_request(sec_key):
+    try:
+        requests.delete(f"{FIREBASE_DB_URL}/registered_keys/{sec_key}.json")
+        return True
+    except: return False
+
+# --- STATE ENGINE MANAGEMENT ---
+if "auth_status" not in st.session_state: st.session_state.auth_status = "unauthenticated"
+if "nav_page" not in st.session_state: st.session_state.nav_page = "home" # Tabs state
+if "sel_hwid" not in st.session_state: st.session_state.sel_hwid = ""
+if "sel_name" not in st.session_state: st.session_state.sel_name = ""
+if "sel_sec_key" not in st.session_state: st.session_state.sel_sec_key = ""
+if "sel_limit" not in st.session_state: st.session_state.sel_limit = 30
+if "sel_issue" not in st.session_state: st.session_state.sel_issue = datetime.now().date()
+if "sel_expiry" not in st.session_state: st.session_state.sel_expiry = datetime.now().date() + timedelta(days=365)
+if "sel_block" not in st.session_state: st.session_state.sel_block = "-"
+if "sel_status" not in st.session_state: st.session_state.sel_status = "active"
+if "sel_mobile" not in st.session_state: st.session_state.sel_mobile = ""
+if "sel_email" not in st.session_state: st.session_state.sel_email = ""
+if "sel_address" not in st.session_state: st.session_state.sel_address = ""
 
 # ==========================================
-# 🛑 PROFESSIONAL SECURITY ACCESS GATEWAY
+# 🛑 PROFESSIONAL SECURITY ACCESS GATEWAY (LOGIN)
 # ==========================================
 if st.session_state.auth_status == "unauthenticated":
-    _, center_col, _ = st.columns([1.3, 1.4, 1.3])
-    with center_col:
-        st.markdown('<div class="login-box">', unsafe_allow_html=True)
-        st.markdown('<h2 style="color: #ffffff; font-weight:800; margin-bottom:5px;">🛡️ MZ SECURITY TERMINAL</h2>', unsafe_allow_html=True)
-        st.markdown('<p style="color: #6b7280; font-size:13px; margin-bottom:35px;">AUTHENTICATED SYSTEM ADMIN ACCESS ONLY</p>', unsafe_allow_html=True)
-        
-        adm_user = st.text_input("ADMIN USERNAME:")
-        adm_pass = st.text_input("ADMIN PASSWORD:", type="password")
-        
-        st.write("")
-        if st.button("🔐 ACCESS HUB CORE", type="primary", use_container_width=True):
-            if adm_user == "MZAdmin" and adm_pass == "Zubair@786":
-                st.session_state.auth_status = "admin"
-                st.toast("Authorization Granted.")
-                st.rerun()
-            else:
-                st.error("Access Forbidden: Invalid Control Signatures")
-                
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-container">', unsafe_allow_html=True)
+    st.markdown('<div class="login-box">', unsafe_allow_html=True)
+    st.markdown('<div class="brand-title">🛡️ MZ SECURITY HUB</div>', unsafe_allow_html=True)
+    st.markdown('<div class="brand-sub">ENTERPRISE LICENSE MANAGEMENT</div>', unsafe_allow_html=True)
+    
+    adm_user = st.text_input("ADMIN USERNAME", placeholder="Enter your identity...")
+    adm_pass = st.text_input("SECURITY PIN", type="password", placeholder="Enter master key...")
+    
+    st.write("")
+    if st.button("🔐 AUTHENTICATE & ENTER", type="primary", use_container_width=True):
+        if adm_user == "MZAdmin" and adm_pass == "Zubair@786":
+            st.session_state.auth_status = "admin"
+            st.rerun()
+        else:
+            st.error("❌ Access Forbidden: Invalid Credentials")
+            
+    st.markdown('</div></div>', unsafe_allow_html=True)
     st.stop()
 
 # ==========================================
-# 🛡️ ADMINISTRATIVE DASHBOARD WORKING AREA
+# 🛡️ ADMINISTRATIVE DASHBOARD (LOGGED IN)
 # ==========================================
 elif st.session_state.auth_status == "admin":
-    title_area, logout_area = st.columns([8.5, 1.5])
-    with title_area:
-        st.markdown('<h3 style="color: #ffffff; font-weight:800; margin-top:5px;">🛡️ CENTRAL LICENSE ECOSYSTEM</h3>', unsafe_allow_html=True)
-    with logout_area:
-        if st.button("🚪 CLOSE TERMINAL", use_container_width=True):
+    # --- HEADER & NAVIGATION ---
+    head_col1, head_col2 = st.columns([8, 2])
+    with head_col1:
+        st.markdown('<h2 style="color: #ffffff; font-weight:800; margin-top:0;">🛡️ SAFE-GUARD CENTRAL</h2>', unsafe_allow_html=True)
+    with head_col2:
+        if st.button("🚪 SYSTEM LOGOUT", use_container_width=True):
             st.session_state.auth_status = "unauthenticated"
             st.rerun()
 
+    # PENDING REQUESTS COUNTER (For visual badge)
+    unapproved_queue = get_all_registered_keys()
+    req_count = len(unapproved_queue)
+    req_btn_text = f"📩 PENDING REQUESTS ({req_count})" if req_count > 0 else "📩 PENDING REQUESTS"
+
+    # CUSTOM TAB MENU
+    nav_col1, nav_col2, _ = st.columns([3, 3, 4])
+    with nav_col1:
+        if st.button("🏠 DASHBOARD & ACTIVE NODES", type="primary" if st.session_state.nav_page == "home" else "secondary", use_container_width=True):
+            st.session_state.nav_page = "home"
+            st.rerun()
+    with nav_col2:
+        if st.button(req_btn_text, type="primary" if st.session_state.nav_page == "requests" else "secondary", use_container_width=True):
+            st.session_state.nav_page = "requests"
+            st.rerun()
     st.write("")
 
-    # --- FIREBASE REST CLIENT FUNCTIONS ---
-    def get_all_licenses():
-        try:
-            res = requests.get(f"{FIREBASE_DB_URL}/security_licenses.json", timeout=10)
-            return res.json() if (res.status_code == 200 and res.json()) else {}
-        except: return {}
+    # ==========================================
+    # VIEW 1: HOME (REGISTRATION & ACTIVE LIST)
+    # ==========================================
+    if st.session_state.nav_page == "home":
+        # PANEL: MASTER CONTROLLER FIELD ENTRY
+        st.markdown('<div class="section-card">', unsafe_allow_html=True)
+        st.markdown('<h4 style="color:#f8fafc; margin-bottom: 20px;">⚙️ Profile Activation & Variables</h4>', unsafe_allow_html=True)
 
-    def get_all_registered_keys():
-        try:
-            res = requests.get(f"{FIREBASE_DB_URL}/registered_keys.json", timeout=10)
-            return res.json() if (res.status_code == 200 and res.json()) else {}
-        except: return {}
+        c_left, c_right = st.columns(2)
+        with c_left:
+            in_hwid = st.text_input("Target Hardware ID (HWID):", value=st.session_state.sel_hwid)
+            in_name = st.text_input("Customer Name:", value=st.session_state.sel_name)
+            in_skey = st.text_input("Security Passkey:", value=st.session_state.sel_sec_key)
+            edit_mobile = st.text_input("Client Phone:", value=st.session_state.sel_mobile)
+            edit_email = st.text_input("Client Email:", value=st.session_state.sel_email)
+            edit_address = st.text_input("Physical Address:", value=st.session_state.sel_address)
 
-    def push_license_secure(hwid, name, sec_key, issuance, expiry, limit, block_date, status, mobile, email, address):
-        try:
-            payload = {
-                "name": name, 
-                "security_key": sec_key,
-                "mobile": mobile,   
-                "email": email,     
-                "address": address, 
-                "issuance_date": str(issuance),
-                "expiry": str(expiry), 
-                "status": status,
-                "blocked_until": str(block_date), 
-                "offline_limit_days": int(limit)
-            }
-            requests.put(f"{FIREBASE_DB_URL}/security_licenses/{hwid}.json", json=payload)
-            return True
-        except: return False
+        with c_right:
+            in_days_limit = st.number_input("Offline Guard Threshold (Days):", min_value=1, max_value=365, value=st.session_state.sel_limit)
+            
+            st.markdown('<div style="background:#020617; padding:15px; border-radius:10px; border:1px solid #1e293b; margin:15px 0;">', unsafe_allow_html=True)
+            in_issue = st.date_input("Issuance Date:", value=st.session_state.sel_issue)
+            in_expiry = st.date_input("Expiration Date:", value=st.session_state.sel_expiry)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            select_block_state = st.radio(
+                "Execution Policy:",
+                ["🟢 Authorized / Active", "🚫 Master Freeze Lock"],
+                index=0 if st.session_state.sel_block == "-" else 1, horizontal=True
+            )
+            if "Freeze Lock" in select_block_state:
+                try: parse_b_date = datetime.strptime(st.session_state.sel_block, "%Y-%m-%d")
+                except: parse_b_date = datetime.now()
+                assigned_block_val = st.date_input("Maintain Blockade Until:", parse_b_date)
+                assigned_status_val = "blocked"
+            else:
+                assigned_block_val = "-"
+                assigned_status_val = "active"
 
-    def remove_license_node(hwid):
-        try:
-            requests.delete(f"{FIREBASE_DB_URL}/security_licenses/{hwid}.json")
-            return True
-        except: return False
-
-    def remove_pending_request(sec_key):
-        try:
-            requests.delete(f"{FIREBASE_DB_URL}/registered_keys/{sec_key}.json")
-            return True
-        except: return False
-
-    # --- POPUP DIALOG WINDOWS ---
-    @st.dialog("⚠️ Absolute Core Deletion Request")
-    def trigger_deletion_popup(hwid, name):
-        st.markdown(f"#### Completely clear node authorization for client: **{name}**?")
-        st.write("Warning: The targeted desktop installation will be locked instantly.")
-        b1, b2 = st.columns(2)
-        with b1:
-            if st.button("💥 Wipe Node", use_container_width=True):
-                remove_license_node(hwid)
-                st.success("Target data purged.")
+        st.write(" ")
+        action_box1, action_box2 = st.columns(2)
+        with action_box1:
+            if st.button("💾 COMMIT VECTOR TO DATABASE", type="primary", use_container_width=True):
+                if in_hwid.strip() and in_skey.strip():
+                    with st.spinner("Writing parameters safely..."):
+                        committed = push_license_secure(
+                            in_hwid.strip(), in_name.strip(), in_skey.strip(), in_issue, in_expiry, 
+                            in_days_limit, assigned_block_val, assigned_status_val,
+                            edit_mobile.strip(), edit_email.strip(), edit_address.strip()
+                        )
+                        if committed:
+                            if in_skey.strip() in unapproved_queue: remove_pending_request(in_skey.strip())
+                            st.success(f"Successfully Updated for: {in_name}")
+                            st.session_state.sel_hwid = ""
+                            st.session_state.sel_name = ""
+                            st.session_state.sel_sec_key = ""
+                            st.session_state.sel_mobile = ""
+                            st.session_state.sel_email = ""
+                            st.session_state.sel_address = ""
+                            st.session_state.sel_issue = datetime.now().date()
+                            st.session_state.sel_expiry = datetime.now().date() + timedelta(days=365)
+                            st.rerun()
+                else: st.error("HWID & Security Key are required!")
+                
+        with action_box2:
+            if st.button("🧹 CLEAR FORM", use_container_width=True):
+                st.session_state.sel_hwid = ""
+                st.session_state.sel_name = ""
+                st.session_state.sel_sec_key = ""
+                st.session_state.sel_mobile = ""
+                st.session_state.sel_email = ""
+                st.session_state.sel_address = ""
                 st.rerun()
-        with b2:
-            if st.button("Cancel", use_container_width=True): st.rerun()
-
-    # --- STATE ENGINE MANAGEMENT ---
-    if "sel_hwid" not in st.session_state: st.session_state.sel_hwid = ""
-    if "sel_name" not in st.session_state: st.session_state.sel_name = ""
-    if "sel_sec_key" not in st.session_state: st.session_state.sel_sec_key = ""
-    if "sel_limit" not in st.session_state: st.session_state.sel_limit = 30
-    if "sel_issue" not in st.session_state: st.session_state.sel_issue = datetime.now().date()
-    if "sel_expiry" not in st.session_state: st.session_state.sel_expiry = datetime.now().date() + timedelta(days=365)
-    if "sel_block" not in st.session_state: st.session_state.sel_block = "-"
-    if "sel_status" not in st.session_state: st.session_state.sel_status = "active"
-    if "sel_mobile" not in st.session_state: st.session_state.sel_mobile = ""
-    if "sel_email" not in st.session_state: st.session_state.sel_email = ""
-    if "sel_address" not in st.session_state: st.session_state.sel_address = ""
-
-    # ==========================================
-    # PANEL 1: MASTER CONTROLLER FIELD ENTRY (TOP PANEL)
-    # ==========================================
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-heading">🛠️ Profiles Activation & Variable Calibration</div>', unsafe_allow_html=True)
-
-    c_left, c_right = st.columns(2)
-    with c_left:
-        in_hwid = st.text_input("Target Hardware ID (HWID):", value=st.session_state.sel_hwid)
-        in_name = st.text_input("Customer Name Reference:", value=st.session_state.sel_name)
-        in_skey = st.text_input("Configured Security Passkey (Fully Editable):", value=st.session_state.sel_sec_key)
-        
-        edit_mobile = st.text_input("Client Phone Contact:", value=st.session_state.sel_mobile)
-        edit_email = st.text_input("Client Account Email:", value=st.session_state.sel_email)
-        edit_address = st.text_input("Physical Premises Address:", value=st.session_state.sel_address)
-
-    with c_right:
-        in_days_limit = st.number_input("Allowed Offline Guard Threshold (Days):", min_value=1, max_value=365, value=st.session_state.sel_limit)
-        
-        st.markdown('<div style="background:#0b0f19; padding:20px; border-radius:12px; border:1px solid #1f2937; margin-top:15px; margin-bottom:15px;">', unsafe_allow_html=True)
-        st.markdown('<span style="color:#38bdf8; font-weight:700; font-size:13px;">📅 TIMELINE INTEGRITY OVERRIDE</span>', unsafe_allow_html=True)
-        in_issue = st.date_input("Issuance Authentication Date:", value=st.session_state.sel_issue)
-        in_expiry = st.date_input("Expiration Enforcement Date:", value=st.session_state.sel_expiry)
         st.markdown('</div>', unsafe_allow_html=True)
+
+        # PANEL: ACTIVE LIVE SYSTEMS
+        st.markdown('<div class="section-card">', unsafe_allow_html=True)
+        st.markdown('<h4 style="color:#f8fafc; margin-bottom: 20px;">📊 Authorized Production Nodes</h4>', unsafe_allow_html=True)
+        filter_string = st.text_input("🔍 Search Database (Name, Key, HWID):", "").lower()
+
+        dc1, dc2, dc3, dc4, dc5, dc6, dc7, dc8 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.2, 0.6, 0.6])
+        dc1.markdown('<div class="list-header">HWID</div>', unsafe_allow_html=True)
+        dc2.markdown('<div class="list-header">CLIENT NAME</div>', unsafe_allow_html=True)
+        dc3.markdown('<div class="list-header">SEC KEY</div>', unsafe_allow_html=True)
+        dc4.markdown('<div class="list-header">HEALTH</div>', unsafe_allow_html=True)
+        dc5.markdown('<div class="list-header">EXPIRY</div>', unsafe_allow_html=True)
+        dc6.markdown('<div class="list-header">PHONE</div>', unsafe_allow_html=True)
+        dc7.markdown('<div class="list-header">EDIT</div>', unsafe_allow_html=True)
+        dc8.markdown('<div class="list-header">DEL</div>', unsafe_allow_html=True)
+
+        production_licenses = get_all_licenses()
+        matched_any = False
         
-        select_block_state = st.radio(
-            "System Master Execution Policy:",
-            ["🟢 Node Authorized / Active Operations", "🚫 Deploy Master Freeze Lock Restriction"],
-            index=0 if st.session_state.sel_block == "-" else 1, horizontal=True
-        )
-        if "Deploy Master Freeze" in select_block_state:
-            try: parse_b_date = datetime.strptime(st.session_state.sel_block, "%Y-%m-%d")
-            except: parse_b_date = datetime.now()
-            picked_block_date = st.date_input("Maintain Blockade Until Date:", parse_b_date)
-            assigned_block_val = picked_block_date
-            assigned_status_val = "blocked"
+        for hwid_node, node_data in production_licenses.items():
+            n_name = node_data.get("name", "")
+            n_skey = node_data.get("security_key", "-")
+            
+            if filter_string in hwid_node.lower() or filter_string in n_name.lower() or filter_string in n_skey.lower():
+                matched_any = True
+                r1, r2, r3, r4, r5, r6, r7, r8 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.2, 0.6, 0.6])
+                r1.write(f"`{hwid_node[:15]}...`") # Shrink slightly for UI neatness
+                r2.write(n_name)
+                r3.write(f"`{n_skey}`")
+                
+                if node_data.get("status") == "blocked": r4.markdown('<span class="badge-blocked">🚫 FROZEN</span>', unsafe_allow_html=True)
+                else: r4.markdown('<span class="badge-active">🟢 ACTIVE</span>', unsafe_allow_html=True)
+                    
+                r5.write(node_data.get("expiry", "-"))
+                r6.write(node_data.get("mobile", "-"))
+                
+                if r7.button("✏️", key=f"edit_{hwid_node}"):
+                    st.session_state.sel_hwid = hwid_node
+                    st.session_state.sel_name = n_name
+                    st.session_state.sel_sec_key = n_skey
+                    st.session_state.sel_mobile = node_data.get("mobile", "")
+                    st.session_state.sel_email = node_data.get("email", "")
+                    st.session_state.sel_address = node_data.get("address", "")
+                    st.session_state.sel_limit = int(node_data.get("offline_limit_days", 30))
+                    st.session_state.sel_block = node_data.get("blocked_until", "-")
+                    st.session_state.sel_status = node_data.get("status", "active")
+                    try: st.session_state.sel_issue = datetime.strptime(node_data.get("issuance_date", ""), "%Y-%m-%d").date()
+                    except: pass
+                    try: st.session_state.sel_expiry = datetime.strptime(node_data.get("expiry", ""), "%Y-%m-%d").date()
+                    except: pass
+                    st.rerun()
+                    
+                if r8.button("🗑️", key=f"wipe_{hwid_node}"):
+                    remove_license_node(hwid_node)
+                    st.rerun()
+                st.markdown("<hr style='margin: 5px 0; border-top: 1px solid #1e293b;'>", unsafe_allow_html=True)
+
+        if not matched_any: st.info("No active licenses found.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+    # ==========================================
+    # VIEW 2: PENDING REQUESTS MENU
+    # ==========================================
+    elif st.session_state.nav_page == "requests":
+        st.markdown('<div class="section-card" style="border: 1px solid #f59e0b;">', unsafe_allow_html=True)
+        st.markdown('<h4 style="color:#f59e0b; margin-bottom: 20px;">📋 Inbound Device Pipeline</h4>', unsafe_allow_html=True)
+        
+        if unapproved_queue:
+            # Added Address Column and resized HWID
+            qh1, qh2, qh3, qh4, qh5, qh6, qh7 = st.columns([1.5, 1.2, 1.2, 1.5, 1.2, 1.0, 1.0])
+            qh1.markdown('<div class="list-header">CLIENT NAME</div>', unsafe_allow_html=True)
+            qh2.markdown('<div class="list-header">KEY</div>', unsafe_allow_html=True)
+            qh3.markdown('<div class="list-header">PHONE</div>', unsafe_allow_html=True)
+            qh4.markdown('<div class="list-header">📍 LOCATION/ADDR</div>', unsafe_allow_html=True)
+            qh5.markdown('<div class="list-header">HWID</div>', unsafe_allow_html=True)
+            qh6.markdown('<div class="list-header">ACTION</div>', unsafe_allow_html=True)
+            qh7.markdown('<div class="list-header">REJECT</div>', unsafe_allow_html=True)
+
+            for req_key, req_val in unapproved_queue.items():
+                q_name = req_val.get("name", "Unknown")
+                q_phone = req_val.get("phone", "")
+                q_address = req_val.get("address", "N/A") # Yeh raha address!
+                q_hwid = req_val.get("hardware_id", "UNKNOWN")
+                q_email = req_val.get("email", "")
+                q_issue = req_val.get("issue_date", str(datetime.now().date()))
+                q_expiry = req_val.get("expiry_date", str(datetime.now().date() + timedelta(days=365)))
+
+                qc1, qc2, qc3, qc4, qc5, qc6, qc7 = st.columns([1.5, 1.2, 1.2, 1.5, 1.2, 1.0, 1.0])
+                qc1.write(q_name)
+                qc2.write(f"`{req_key}`")
+                qc3.write(q_phone)
+                qc4.write(f"*{q_address[:20]}*") # Address dikhayega yahan
+                qc5.write(f"`{q_hwid[:8]}...`")
+                
+                # JADU YAHAN HAI: Accept dabaane par saara data save kar ke Page Home par redirect!
+                if qc6.button("Load 👍", key=f"load_{req_key}", use_container_width=True):
+                    st.session_state.sel_hwid = q_hwid
+                    st.session_state.sel_name = q_name
+                    st.session_state.sel_sec_key = req_key
+                    st.session_state.sel_mobile = q_phone
+                    st.session_state.sel_email = q_email
+                    st.session_state.sel_address = q_address
+                    try: st.session_state.sel_issue = datetime.strptime(q_issue, "%Y-%m-%d").date()
+                    except: st.session_state.sel_issue = datetime.now().date()
+                    try: st.session_state.sel_expiry = datetime.strptime(q_expiry, "%Y-%m-%d").date()
+                    except: st.session_state.sel_expiry = datetime.now().date()
+                    
+                    st.session_state.nav_page = "home" # Auto-Switch to Home
+                    st.rerun()
+
+                if qc7.button("Drop ❌", key=f"drop_{req_key}", use_container_width=True):
+                    remove_pending_request(req_key)
+                    st.rerun()
+                st.markdown("<hr style='margin: 6px 0; border-top: 1px solid #1e293b;'>", unsafe_allow_html=True)
         else:
-            assigned_block_val = "-"
-            assigned_status_val = "active"
+            st.info("Pipeline Status: Clear. No pending requests.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.write(" ")
-    action_box1, action_box2 = st.columns(2)
-    with action_box1:
-        if st.button("💾 COMMIT VECTOR TO LIVE DATABASE", type="primary", use_container_width=True):
-            if in_hwid.strip() and in_skey.strip():
-                with st.spinner("Writing parameters safely to nodes..."):
-                    committed = push_license_secure(
-                        hwid=in_hwid.strip(), 
-                        name=in_name.strip(), 
-                        sec_key=in_skey.strip(), 
-                        issuance=in_issue,
-                        expiry=in_expiry, 
-                        limit=in_days_limit, 
-                        block_date=assigned_block_val, 
-                        status=assigned_status_val,
-                        mobile=edit_mobile.strip(),
-                        email=edit_email.strip(),
-                        address=edit_address.strip()
-                    )
-                    if committed:
-                        # Clear request block if it was accepted from queue
-                        live_queue = get_all_registered_keys()
-                        if in_skey.strip() in live_queue:
-                            remove_pending_request(in_skey.strip())
-                        
-                        st.success(f"System Matrix Successfully Updated for: {in_name}")
-                        
-                        # Flush active memory buffer
-                        st.session_state.sel_hwid = ""
-                        st.session_state.sel_name = ""
-                        st.session_state.sel_sec_key = ""
-                        st.session_state.sel_mobile = ""
-                        st.session_state.sel_email = ""
-                        st.session_state.sel_address = ""
-                        st.session_state.sel_issue = datetime.now().date()
-                        st.session_state.sel_expiry = datetime.now().date() + timedelta(days=365)
-                        st.session_state.sel_block = "-"
-                        st.session_state.sel_status = "active"
-                        st.rerun()
-            else: st.error("Operation Aborted: HWID & Security Key vectors cannot be evaluated empty.")
-            
-    with action_box2:
-        if st.button("🧹 PURGE ENTRY SLOTS", use_container_width=True):
-            st.session_state.sel_hwid = ""
-            st.session_state.sel_name = ""
-            st.session_state.sel_sec_key = ""
-            st.session_state.sel_mobile = ""
-            st.session_state.sel_email = ""
-            st.session_state.sel_address = ""
-            st.session_state.sel_limit = 30
-            st.session_state.sel_issue = datetime.now().date()
-            st.session_state.sel_expiry = datetime.now().date() + timedelta(days=365)
-            st.session_state.sel_block = "-"
-            st.session_state.sel_status = "active"
-            st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ==========================================
-    # PANEL 2: LIVE OPERATIONAL SYSTEMS RUNNING (MIDDLE PANEL)
-    # ==========================================
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-heading">📊 Authorized Production Node Registry</div>', unsafe_allow_html=True)
-    filter_string = st.text_input("🔍 Filter Memory Indexes (HWID / Name / Key):", "").lower()
-
-    dc1, dc2, dc3, dc4, dc5, dc6, dc7, dc8 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.2, 0.6, 0.6])
-    dc1.markdown('<div class="list-header">💻 HARDWARE ID</div>', unsafe_allow_html=True)
-    dc2.markdown('<div class="list-header">👤 CLIENT NAME</div>', unsafe_allow_html=True)
-    dc3.markdown('<div class="list-header">🔑 KEY DEPLOYED</div>', unsafe_allow_html=True)
-    dc4.markdown('<div class="list-header">🛡️ HEALTH LIFE</div>', unsafe_allow_html=True)
-    dc5.markdown('<div class="list-header">⏳ DEADLINE</div>', unsafe_allow_html=True)
-    dc6.markdown('<div class="list-header">📞 PHONE</div>', unsafe_allow_html=True)
-    dc7.markdown('<div class="list-header">EDIT</div>', unsafe_allow_html=True)
-    dc8.markdown('<div class="list-header">WIPE</div>', unsafe_allow_html=True)
-
-    production_licenses = get_all_licenses()
-    matched_any_live = False
-    
-    for hwid_node, node_data in production_licenses.items():
-        n_name = node_data.get("name", "")
-        n_skey = node_data.get("security_key", "-")
-        n_phone = node_data.get("mobile", "")
-        n_mail = node_data.get("email", "")
-        n_addr = node_data.get("address", "")
-        n_iss = node_data.get("issuance_date", "-")
-        n_exp = node_data.get("expiry", "-")
-
-        if filter_string in hwid_node.lower() or filter_string in n_name.lower() or filter_string in n_skey.lower():
-            matched_any_live = True
-            r1, r2, r3, r4, r5, r6, r7, r8 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.2, 0.6, 0.6])
-            r1.write(f"`{hwid_node}`")
-            r2.write(n_name)
-            r3.write(f"`{n_skey}`")
-            
-            if node_data.get("status") == "blocked":
-                bl_str = node_data.get("blocked_until", "-")
-                try:
-                    p_date = datetime.strptime(bl_str, "%Y-%m-%d").date()
-                    rem_days = (p_date - datetime.now().date()).days
-                    r4.markdown(f'<span class="badge-blocked">🚫 FROZEN ({rem_days} d)</span>', unsafe_allow_html=True)
-                except: 
-                    r4.markdown('<span class="badge-blocked">🚫 MASTER LOCK</span>', unsafe_allow_html=True)
-            else: 
-                r4.markdown('<span class="badge-active">🟢 AUTHORIZED</span>', unsafe_allow_html=True)
-                
-            r5.write(n_exp)
-            r6.write(n_phone if n_phone else "No Data")
-            
-            # EDIT ACTION FUNCTION: Pulls absolutely all data fields to the master configuration box at top!
-            if r7.button("✏️", key=f"edit_node_{hwid_node}", use_container_width=True):
-                st.session_state.sel_hwid = hwid_node
-                st.session_state.sel_name = n_name
-                st.session_state.sel_sec_key = n_skey  # Properly map key to enable field overrides
-                st.session_state.sel_mobile = n_phone
-                st.session_state.sel_email = n_mail
-                st.session_state.sel_address = n_addr
-                st.session_state.sel_limit = int(node_data.get("offline_limit_days", 30))
-                st.session_state.sel_block = node_data.get("blocked_until", "-")
-                st.session_state.sel_status = node_data.get("status", "active")
-                try: st.session_state.sel_issue = datetime.strptime(n_iss, "%Y-%m-%d").date()
-                except: st.session_state.sel_issue = datetime.now().date()
-                try: st.session_state.sel_expiry = datetime.strptime(n_exp, "%Y-%m-%d").date()
-                except: st.session_state.sel_expiry = datetime.now().date()
-                st.toast(f"Data Vectors loaded for client: {n_name}")
-                st.rerun()
-                
-            if r8.button("🗑️", key=f"wipe_node_{hwid_node}", use_container_width=True):
-                trigger_deletion_popup(hwid_node, n_name)
-            st.markdown("<hr style='margin: 6px 0; border-top: 1px solid #1f2937;'>", unsafe_allow_html=True)
-
-    if not matched_any_live: 
-        st.info("Ecosystem Status: No active deployed production hardware matches current filter index.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ==========================================
-    # PANEL 3: PENDING INBOUND CONNECTION REQUESTS (SABSY NICHY - BOTTOM PANEL)
-    # ==========================================
-    st.markdown('<div class="section-card" style="border-top: 4px solid #f59e0b;">', unsafe_allow_html=True)
-    st.markdown('<div class="section-heading" style="color: #f59e0b !important;">📋 Inbound Device Pipeline Connections (Awaiting Verification)</div>', unsafe_allow_html=True)
-    
-    unapproved_queue = get_all_registered_keys()
-    if unapproved_queue:
-        qh1, qh2, qh3, qh4, qh5, qh6 = st.columns([1.5, 1.3, 1.2, 1.8, 1.0, 1.0])
-        qh1.markdown('<div class="list-header">👤 PROSPECT CLIENT</div>', unsafe_allow_html=True)
-        qh2.markdown('<div class="list-header">🔑 KEY DEPLOYED BY USER</div>', unsafe_allow_html=True)
-        qh3.markdown('<div class="list-header">📱 PHONE NUMBER</div>', unsafe_allow_html=True)
-        qh4.markdown('<div class="list-header">💻 REQUESTING HARDWARE SOURCE</div>', unsafe_allow_html=True)
-        qh5.markdown('<div class="list-header">EVALUATE PIPELINE</div>', unsafe_allow_html=True)
-        qh6.markdown('<div class="list-header">DISCARD</div>', unsafe_allow_html=True)
-
-        for req_key, req_val in unapproved_queue.items():
-            q_name = req_val.get("name", "Unknown Client")
-            q_phone = req_val.get("phone", "")
-            q_hwid = req_val.get("hardware_id", "UNKNOWN_SOURCE_ID")
-            q_email = req_val.get("email", "")
-            q_address = req_val.get("address", "")
-            q_issue = req_val.get("issue_date", str(datetime.now().date()))
-            q_expiry = req_val.get("expiry_date", str(datetime.now().date() + timedelta(days=365)))
-
-            qc1, qc2, qc3, qc4, qc5, qc6 = st.columns([1.5, 1.3, 1.2, 1.8, 1.0, 1.0])
-            qc1.write(q_name)
-            qc2.write(f"`{req_key}`")
-            qc3.write(q_phone if q_phone else "Not Given")
-            qc4.write(f"`{q_hwid}`")
-            
-            # VALIDATE PIPELINE ACTION: Safely sends data fields to top input parameters for adjustments
-            if qc5.button("Verify & Load 👍", key=f"load_req_{req_key}", use_container_width=True):
-                st.session_state.sel_hwid = q_hwid
-                st.session_state.sel_name = q_name
-                st.session_state.sel_sec_key = req_key
-                st.session_state.sel_mobile = q_phone
-                st.session_state.sel_email = q_email
-                st.session_state.sel_address = q_address
-                try: st.session_state.sel_issue = datetime.strptime(q_issue, "%Y-%m-%d").date()
-                except: st.session_state.sel_issue = datetime.now().date()
-                try: st.session_state.sel_expiry = datetime.strptime(q_expiry, "%Y-%m-%d").date()
-                except: st.session_state.sel_expiry = datetime.now().date()
-                st.toast(f"Pipeline Request loaded for {q_name}. Map parameters above to register live link.")
-                st.rerun()
-
-            if qc6.button("Reject Request ❌", key=f"drop_req_{req_key}", use_container_width=True):
-                remove_pending_request(req_key)
-                st.toast(f"Connection string request from {q_name} drop successfully.")
-                st.rerun()
-            st.markdown("<hr style='margin: 6px 0; border-top: 1px solid #1f2937;'>", unsafe_allow_html=True)
-    else:
-        st.info("Pipeline Sync Status: Clear. No inbound remote registration requests are floating on the server network.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# --- HIGH-END BRANDED FOOTER ---
-st.markdown('<div class="dev-footer">🚀 Powered by <span>Muhammad Zubair</span> | Safe-Guard POS Licensing Server Engine</div>', unsafe_allow_html=True)
+st.markdown('<div style="text-align: center; color: #475569; font-size: 13px; margin-top: 50px;">🚀 Powered by <span style="color:#38bdf8; font-weight:bold;">Muhammad Zubair</span> | Secure POS Architecture</div>', unsafe_allow_html=True)
