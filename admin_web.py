@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 st.set_page_config(page_title="MZ Central Hub - Terminal", page_icon="🛡️", layout="wide")
 
 # FRESH FIREBASE PROJECT URL
-FIREBASE_DB_URL = "https://zubairposbackup-default-rtdb.firebaseio.com/"
+FIREBASE_DB_URL = "https://mzposallbackup-default-rtdb.firebaseio.com/"
 
 # --- TEMPORAL CALCULATIONS HELPER FUNCTION ---
 def get_temporal_variance_label(expiry_date_str):
