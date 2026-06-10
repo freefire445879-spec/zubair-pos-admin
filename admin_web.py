@@ -9,6 +9,34 @@ st.set_page_config(page_title="MZ Central Hub - Terminal", page_icon="🛡️", 
 # FRESH FIREBASE PROJECT URL
 FIREBASE_DB_URL = "https://zubairposbackup-default-rtdb.firebaseio.com/"
 
+# --- TEMPORAL CALCULATIONS HELPER FUNCTION ---
+def get_temporal_variance_label(expiry_date_str):
+    if expiry_date_str == "-": return "Indefinite constraint vector"
+    try:
+        today = datetime.now().date()
+        expiry_date = datetime.strptime(expiry_date_str, "%Y-%m-%d").date()
+        
+        if today > expiry_date:
+            return "🚫 Temporal vector expired."
+        
+        diff = expiry_date - today
+        days_remaining = diff.days
+        
+        if days_remaining > 365:
+            years = days_remaining // 365
+            months = (days_remaining % 365) // 30
+            if months > 0:
+                return f"{years} Years {months} Months remaining"
+            else:
+                return f"{years} Years remaining"
+        elif days_remaining > 30:
+            months = days_remaining // 30
+            return f"{months} Months remaining"
+        else:
+            return f"{days_remaining} Days remaining"
+    except:
+        return "Temporal vector anomaly detected."
+
 # --- ULTRA-PREMIUM ENTERPRISE DESIGN CSS ---
 st.markdown("""
     <style>
@@ -178,6 +206,34 @@ st.markdown("""
         border-color: rgba(255, 255, 255, 0.05) !important;
         margin: 20px 0 !important;
     }
+
+    /* SPECIFIC CSS FOR DETAILED INFO PANEL */
+    .info-details-container {
+        background: rgba(2, 6, 23, 0.7);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-radius: 16px;
+        padding: 25px;
+        margin-top: -15px; /* Pull up closer to the row */
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .info-label { color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;}
+    .info-value { color: #ffffff; font-size: 15px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 20px;}
+    .info-value-mono { font-family: 'JetBrains Mono', monospace; color: #38bdf8;}
+
+    /* Time remaining label specific styling */
+    .time-remaining-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 12.5px;
+        color: #f59e0b; /* Amber warning color */
+        padding: 5px 12px;
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        border-radius: 8px;
+        display: inline-block;
+        letter-spacing: 0.5px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -220,6 +276,8 @@ def remove_pending_request(sec_key):
 # --- STATE ENGINE MANAGEMENT ---
 if "auth_status" not in st.session_state: st.session_state.auth_status = "unauthenticated"
 if "nav_page" not in st.session_state: st.session_state.nav_page = "home" 
+# New state to track which info panel is open
+if "show_info_hwid" not in st.session_state: st.session_state.show_info_hwid = ""
 if "sel_hwid" not in st.session_state: st.session_state.sel_hwid = ""
 if "sel_name" not in st.session_state: st.session_state.sel_name = ""
 if "sel_sec_key" not in st.session_state: st.session_state.sel_sec_key = ""
@@ -366,16 +424,19 @@ elif st.session_state.auth_status == "admin":
         filter_string = st.text_input("🔍 Real-time Filter Interface (Name, Key, HWID, Phone, Address):", "").lower()
         st.write(" ")
 
-        # Column Layout Optimised to display complete 16-character HWID string flawlessly
-        dc1, dc2, dc3, dc4, dc5, dc6, dc7, dc8 = st.columns([2.3, 1.4, 1.2, 1.3, 1.1, 1.1, 0.4, 0.4])
-        dc1.markdown('<div class="list-header">Target HWID</div>', unsafe_allow_html=True)
-        dc2.markdown('<div class="list-header">Client Identity</div>', unsafe_allow_html=True)
-        dc3.markdown('<div class="list-header">Passkey</div>', unsafe_allow_html=True)
-        dc4.markdown('<div class="list-header">Node Health</div>', unsafe_allow_html=True)
-        dc5.markdown('<div class="list-header">Expiration</div>', unsafe_allow_html=True)
-        dc6.markdown('<div class="list-header">Comms Contact</div>', unsafe_allow_html=True)
-        dc7.markdown('<div class="list-header">Edit</div>', unsafe_allow_html=True)
-        dc8.markdown('<div class="list-header">Wipe</div>', unsafe_allow_html=True)
+        # --- UPDATE: Column weights adjusted to fit new Info column and display full 16-character target HWID flawlessly ---
+        weights = [2.0, 1.3, 1.2, 1.3, 1.1, 1.1, 0.4, 0.4, 0.4] # total total weight 9.2
+        qh1, qh2, qh3, qh4, qh5, qh6, qh7, qh8, qh9 = st.columns(weights)
+        qh1.markdown('<div class="list-header">Target HWID</div>', unsafe_allow_html=True)
+        qh2.markdown('<div class="list-header">Client Identity</div>', unsafe_allow_html=True)
+        qh3.markdown('<div class="list-header">Passkey</div>', unsafe_allow_html=True)
+        qh4.markdown('<div class="list-header">Node Health</div>', unsafe_allow_html=True)
+        qh5.markdown('<div class="list-header">Expiration</div>', unsafe_allow_html=True)
+        qh6.markdown('<div class="list-header">Comms Contact</div>', unsafe_allow_html=True)
+        # --- NEW: Added Details header ---
+        qh7.markdown('<div class="list-header">Details</div>', unsafe_allow_html=True) 
+        qh8.markdown('<div class="list-header">Edit</div>', unsafe_allow_html=True)
+        qh9.markdown('<div class="list-header">Wipe</div>', unsafe_allow_html=True)
 
         production_licenses = get_all_licenses()
         matched_any = False
@@ -385,6 +446,9 @@ elif st.session_state.auth_status == "admin":
             n_skey = node_data.get("security_key", "-")
             n_phone = node_data.get("mobile", "")
             n_address = node_data.get("address", "")
+            n_issue = node_data.get("issuance_date", "-")
+            n_email = node_data.get("email", "-")
+            n_expiry = node_data.get('expiry', '-')
             
             if (filter_string in hwid_node.lower() or 
                 filter_string in n_name.lower() or 
@@ -393,7 +457,7 @@ elif st.session_state.auth_status == "admin":
                 filter_string in n_address.lower()):
                 
                 matched_any = True
-                r1, r2, r3, r4, r5, r6, r7, r8 = st.columns([2.3, 1.4, 1.2, 1.3, 1.1, 1.1, 0.4, 0.4])
+                r1, r2, r3, r4, r5, r6, r7, r8, r9 = st.columns(weights)
                 
                 with r1: st.markdown(f"`{hwid_node}`", unsafe_allow_html=True) # Full 16-Char HWID No Truncation
                 with r2: st.markdown(f"<span style='font-weight:600; color:#e2e8f0;'>{n_name}</span>", unsafe_allow_html=True)
@@ -405,10 +469,22 @@ elif st.session_state.auth_status == "admin":
                     else: 
                         st.markdown('<span class="badge-active">🟢 OPERATIONAL</span>', unsafe_allow_html=True)
                     
-                with r5: st.markdown(f"<span style='color:#94a3b8; font-family:\"JetBrains Mono\"; font-size:13px;'>{node_data.get('expiry', '-')}</span>", unsafe_allow_html=True)
+                with r5: st.markdown(f"<span style='color:#94a3b8; font-family:\"JetBrains Mono\"; font-size:13px;'>{n_expiry}</span>", unsafe_allow_html=True)
                 with r6: st.markdown(f"<span style='color:#cbd5e1; font-size:13px;'>{n_phone if n_phone else '-'}</span>", unsafe_allow_html=True)
                 
-                if r7.button("✏️", key=f"edit_{hwid_node}", use_container_width=True):
+                # --- NEW: Added Info button column logic ---
+                with r7:
+                    # checkbox functions better as a toggle, but button is requested
+                    info_key = f"info_{hwid_node}"
+                    is_showing = (st.session_state.show_info_hwid == hwid_node)
+                    if r7.button("ℹ️", key=info_key, use_container_width=True):
+                        if is_showing:
+                            st.session_state.show_info_hwid = "" # Close
+                        else:
+                            st.session_state.show_info_hwid = hwid_node # Open
+                        st.rerun()
+
+                if r8.button("✏️", key=f"edit_{hwid_node}", use_container_width=True):
                     st.session_state.sel_hwid = hwid_node
                     st.session_state.sel_name = n_name
                     st.session_state.sel_sec_key = n_skey
@@ -424,9 +500,49 @@ elif st.session_state.auth_status == "admin":
                     except: pass
                     st.rerun()
                     
-                if r8.button("🗑️", key=f"wipe_{hwid_node}", use_container_width=True):
+                if r9.button("🗑️", key=f"wipe_{hwid_node}", use_container_width=True):
                     remove_license_node(hwid_node)
                     st.rerun()
+
+                # --- NEW: Added Integrated Detailed Info Display (renders directly under the row) ---
+                if st.session_state.show_info_hwid == hwid_node:
+                    st.markdown('<div class="info-details-container">', unsafe_allow_html=True)
+                    head1, head2 = st.columns([1,1])
+                    with head1:
+                        st.markdown(f'<h4 style="color:#ffffff; font-weight:800; font-size:18px; margin-bottom:5px;">VECTOR DETAILS PROFILE: <span style="color:#0ea5e9;">{n_name}</span></h4>', unsafe_allow_html=True)
+                        st.markdown(f'<span class="info-value-mono">Constraint ID: {hwid_node}</span>', unsafe_allow_html=True)
+                    with head2:
+                        # Add Close button here for good UX
+                        if st.button("❌ Close Vector Details", key=f"close_details_btn_{hwid_node}"):
+                            st.session_state.show_info_hwid = ""
+                            st.rerun()
+                    st.write("---") # separator
+
+                    # Render details in grid format
+                    det_c1, det_c2, det_c3 = st.columns([1.5, 1, 1.5])
+                    with det_c1:
+                        st.markdown('<p class="info-label">👤 Name Signature</p>', unsafe_allow_html=True)
+                        st.markdown(f'<p class="info-value">{n_name}</p>', unsafe_allow_html=True)
+                        st.markdown('<p class="info-label">📍 Physical Node Location Vector</p>', unsafe_allow_html=True)
+                        st.markdown(f'<p class="info-value">{n_address if n_address else "Undisclosed location"}</p>', unsafe_allow_html=True)
+                    with det_c2:
+                        st.markdown('<p class="info-label">📞 Mobile Configuration</p>', unsafe_allow_html=True)
+                        st.markdown(f'<p class="info-value">{n_phone if n_phone else "Unconfigured temporal comms"}</p>', unsafe_allow_html=True)
+                        st.markdown('<p class="info-label">🔑 Passkey Variable</p>', unsafe_allow_html=True)
+                        st.markdown(f'<p class="info-value-mono info-value">{n_skey}</p>', unsafe_allow_html=True)
+                    with det_c3:
+                        st.markdown('<p class="info-label">📧 Email Channel</p>', unsafe_allow_html=True)
+                        st.markdown(f'<p class="info-value">{n_email if n_email else "Email unconfigured"}</p>', unsafe_allow_html=True)
+                        st.markdown('<p class="info-label">🗓️ Temporal Constraint Frame (Issue / Expiry)</p>', unsafe_allow_html=True)
+                        st.markdown(f'<p class="info-value-mono info-value">{n_issue} / {n_expiry}</p>', unsafe_allow_html=True)
+                    
+                    st.write(" ")
+                    # Calculated remaining time on expiry display
+                    temporal_remaining = get_temporal_variance_label(n_expiry)
+                    st.markdown('<p class="info-label">⏱️ Calculated Expiration Delta</p>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="time-remaining-label">{temporal_remaining}</div>', unsafe_allow_html=True)
+
+                    st.markdown('</div>', unsafe_allow_html=True)
                     
                 st.markdown("<hr style='margin: 4px 0 !important; opacity:0.3;'>", unsafe_allow_html=True)
 
@@ -445,7 +561,7 @@ elif st.session_state.auth_status == "admin":
             req_search = st.text_input("🔍 Real-time Filter Request Vault (ID, Name, Phone, Address):", "").lower()
             st.write(" ")
 
-            # Column weights optimized to fit the complete 16-character request HWID
+            # Column weights optimized to fit the complete 16-character request HWID flawlessly
             qh1, qh2, qh3, qh4, qh5, qh6, qh7 = st.columns([1.3, 1.0, 1.1, 1.3, 2.3, 0.9, 0.9])
             qh1.markdown('<div class="list-header">Client Identity</div>', unsafe_allow_html=True)
             qh2.markdown('<div class="list-header">Assigned Key</div>', unsafe_allow_html=True)
