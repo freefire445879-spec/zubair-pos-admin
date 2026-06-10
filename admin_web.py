@@ -233,7 +233,7 @@ if "sel_email" not in st.session_state: st.session_state.sel_email = ""
 if "sel_address" not in st.session_state: st.session_state.sel_address = ""
 
 # ==========================================
-# 🛑 PROFESSIONAL SECURITY ACCESS GATEWAY (LOGIN)
+# 🛑 SECURITY ACCESS GATEWAY (LOGIN)
 # ==========================================
 if st.session_state.auth_status == "unauthenticated":
     _, col_login, _ = st.columns([1, 1.3, 1])
@@ -366,14 +366,15 @@ elif st.session_state.auth_status == "admin":
         filter_string = st.text_input("🔍 Real-time Filter Interface (Name, Key, HWID, Phone, Address):", "").lower()
         st.write(" ")
 
-        dc1, dc2, dc3, dc4, dc5, dc6, dc7, dc8 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.2, 0.6, 0.6])
+        # Column Layout Optimised to display complete 16-character HWID string flawlessly
+        dc1, dc2, dc3, dc4, dc5, dc6, dc7, dc8 = st.columns([2.3, 1.4, 1.2, 1.3, 1.1, 1.1, 0.4, 0.4])
         dc1.markdown('<div class="list-header">Target HWID</div>', unsafe_allow_html=True)
         dc2.markdown('<div class="list-header">Client Identity</div>', unsafe_allow_html=True)
         dc3.markdown('<div class="list-header">Passkey</div>', unsafe_allow_html=True)
         dc4.markdown('<div class="list-header">Node Health</div>', unsafe_allow_html=True)
         dc5.markdown('<div class="list-header">Expiration</div>', unsafe_allow_html=True)
         dc6.markdown('<div class="list-header">Comms Contact</div>', unsafe_allow_html=True)
-        dc7.markdown('<div class="list-header">Modify</div>', unsafe_allow_html=True)
+        dc7.markdown('<div class="list-header">Edit</div>', unsafe_allow_html=True)
         dc8.markdown('<div class="list-header">Wipe</div>', unsafe_allow_html=True)
 
         production_licenses = get_all_licenses()
@@ -392,9 +393,9 @@ elif st.session_state.auth_status == "admin":
                 filter_string in n_address.lower()):
                 
                 matched_any = True
-                r1, r2, r3, r4, r5, r6, r7, r8 = st.columns([1.6, 1.4, 1.2, 1.3, 1.1, 1.2, 0.6, 0.6])
+                r1, r2, r3, r4, r5, r6, r7, r8 = st.columns([2.3, 1.4, 1.2, 1.3, 1.1, 1.1, 0.4, 0.4])
                 
-                with r1: st.markdown(f"`{hwid_node[:14]}...`", unsafe_allow_html=True)
+                with r1: st.markdown(f"`{hwid_node}`", unsafe_allow_html=True) # Full 16-Char HWID No Truncation
                 with r2: st.markdown(f"<span style='font-weight:600; color:#e2e8f0;'>{n_name}</span>", unsafe_allow_html=True)
                 with r3: st.markdown(f"`{n_skey}`", unsafe_allow_html=True)
                 
@@ -444,11 +445,12 @@ elif st.session_state.auth_status == "admin":
             req_search = st.text_input("🔍 Real-time Filter Request Vault (ID, Name, Phone, Address):", "").lower()
             st.write(" ")
 
-            qh1, qh2, qh3, qh4, qh5, qh6, qh7 = st.columns([1.5, 1.2, 1.2, 1.5, 1.2, 1.0, 1.0])
+            # Column weights optimized to fit the complete 16-character request HWID
+            qh1, qh2, qh3, qh4, qh5, qh6, qh7 = st.columns([1.3, 1.0, 1.1, 1.3, 2.3, 0.9, 0.9])
             qh1.markdown('<div class="list-header">Client Identity</div>', unsafe_allow_html=True)
             qh2.markdown('<div class="list-header">Assigned Key</div>', unsafe_allow_html=True)
             qh3.markdown('<div class="list-header">Contact Comms</div>', unsafe_allow_html=True)
-            qh4.markdown('<div class="list-header">📍 Registered Node Location</div>', unsafe_allow_html=True)
+            qh4.markdown('<div class="list-header">📍 Node Location</div>', unsafe_allow_html=True)
             qh5.markdown('<div class="list-header">Request HWID</div>', unsafe_allow_html=True)
             qh6.markdown('<div class="list-header">Stage Load</div>', unsafe_allow_html=True)
             qh7.markdown('<div class="list-header">Drop Request</div>', unsafe_allow_html=True)
@@ -470,13 +472,13 @@ elif st.session_state.auth_status == "admin":
                     req_search in q_hwid.lower()):
                     
                     req_matched = True
-                    qc1, qc2, qc3, qc4, qc5, qc6, qc7 = st.columns([1.5, 1.2, 1.2, 1.5, 1.2, 1.0, 1.0])
+                    qc1, qc2, qc3, qc4, qc5, qc6, qc7 = st.columns([1.3, 1.0, 1.1, 1.3, 2.3, 0.9, 0.9])
                     
                     with qc1: st.markdown(f"<span style='font-weight:600; color:#e2e8f0;'>{q_name}</span>", unsafe_allow_html=True)
                     with qc2: st.markdown(f"`{req_key}`", unsafe_allow_html=True)
                     with qc3: st.markdown(f"<span style='color:#cbd5e1; font-size:13px;'>{q_phone}</span>", unsafe_allow_html=True)
                     with qc4: st.markdown(f"<span style='color:#94a3b8; font-style:italic; font-size:13px;'>{q_address[:24]}</span>", unsafe_allow_html=True) 
-                    with qc5: st.markdown(f"`{q_hwid[:10]}...`", unsafe_allow_html=True)
+                    with qc5: st.markdown(f"`{q_hwid}`", unsafe_allow_html=True) # Full HWID displays perfectly now
                     
                     if qc6.button("Load 👍", key=f"load_{req_key}", use_container_width=True):
                         st.session_state.sel_hwid = q_hwid
